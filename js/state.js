@@ -1,0 +1,12 @@
+import { today, addDays } from './util.js';
+import * as R from './rules.js';
+export const ui = { sheet: null, toast: null, err: '', busy: false, mode: 'in', email: '', version: '', f: {}, val: null, texto: '' };
+export const ob = { d: {}, dEdit: false, plan: R.emptyPlan(), nome: 'Rex', edit: false };
+export const ck = { date: today(), sel: [], minutes: 45, done: null, free: false };
+export const A = {};
+export const nav = { go: h => { location.hash = h; } };
+export const DIAG0 = { idade: '', sexo: '', altura: '', peso: '', metaPeso: '', objetivos: [], prazo: '', cardio: '', dorPeito: '', osso: '', medicamento: '', liberacao: '', lesoes: '', atividades: [], evitar: '', locais: [], experiencia: '', parado: '', diasSemana: '', minutos: '', horario: '', sono: '' };
+export const loadDiag = () => { ob.d = JSON.parse(JSON.stringify({ ...DIAG0, ...(R.profile() || {}) })); };
+export const num = s => { const n = parseFloat(String(s).replace(',', '.')); return Number.isFinite(n) ? n : null; };
+export { addDays };
+export const setBind = (p, v) => { const [a, b] = p.split('.'); if (b === undefined) ob[a] = v; else ({ d: ob.d, ui, ob, f: ui.f })[a][b] = v; };

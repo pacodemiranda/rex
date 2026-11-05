@@ -59,7 +59,7 @@ textarea.field{min-height:76px;resize:none;font-weight:600}
 .sheet-back{position:absolute;inset:0;background:rgba(31,10,43,.55);z-index:20}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;padding:14px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;z-index:21;max-height:80%;overflow-y:auto}
 .grip{width:44px;height:5px;border-radius:3px;background:#D9D4CC;align-self:center}
-.tabbar{display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--line);background:#fff;padding:8px 8px calc(10px + env(safe-area-inset-bottom));flex:none}
+.tabbar{position:absolute;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:12;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.8);border-radius:28px;box-shadow:0 10px 28px rgba(31,10,43,.20);padding:6px}
 .tabbar a{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--mut);font-size:11px;font-weight:800;min-height:44px;justify-content:center}
 .tabbar a.on{color:var(--red)}
 .hdr{padding:16px 20px 8px;display:flex;flex-direction:column;gap:8px;flex:none}
@@ -70,6 +70,7 @@ textarea.field{min-height:76px;resize:none;font-weight:600}
 .chipweek{display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 14px;font-size:14px;font-weight:800}
 .dots{display:flex;gap:6px}.dots i{width:14px;height:14px;border-radius:7px;background:var(--line)}.dots i.on{background:var(--grn)}
 #jwin{flex:1;min-height:0;position:relative;overflow:hidden;background:#CFE7A0}
+.screen.bar .scroll{padding-bottom:110px}
 #jwin img.bg{position:absolute;display:block}
 .node{position:absolute;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center}
 .node.done{background:var(--grn);box-shadow:0 4px 0 var(--grnsh)}
@@ -96,3 +97,20 @@ textarea.field{min-height:76px;resize:none;font-weight:600}
 .toast{position:absolute;left:20px;right:20px;top:14px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;z-index:30}
 .link-row{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;min-height:52px;font-size:16px;font-weight:900}
 .link-row span{flex:1}
+
+.benef{display:flex;align-items:center;gap:12px}.benef p{flex:1}
+.bico{width:34px;height:34px;border-radius:17px;background:var(--pur);display:flex;align-items:center;justify-content:center;flex:none}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}.inl{display:flex;align-items:center;gap:8px}.unit{font-size:14px;font-weight:800;color:var(--mut)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--mut);background:var(--soft);padding:3px 8px;border-radius:10px;margin-left:6px}
+.opt-card{position:relative}.tag{align-self:flex-start;background:var(--grn);color:#fff;font-size:11px;font-weight:900;letter-spacing:.06em;padding:3px 10px;border-radius:10px}
+textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.row2{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.exrow{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:700;padding:6px 0;border-top:1px solid var(--line)}.exrow b{color:var(--pur);white-space:nowrap}
+.icobtn.sm{width:32px;height:32px;border-radius:16px}
+.cta{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:11;background:rgba(255,255,255,.94);border-radius:22px;padding:10px 12px 4px;box-shadow:0 8px 24px rgba(31,10,43,.18);display:flex;flex-direction:column;gap:2px}
+.pedido{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;font-size:13px}.pedido b{color:var(--pur);white-space:nowrap}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:84px;border-radius:16px;border:2px dashed #D9D4CC;background:#fff}
+.slot.me{border:2px solid var(--grn);background:#EAF8EE}.slot small{font-size:11px;font-weight:800;color:var(--mut)}
+.link-row small{display:block;font-size:12px;font-weight:700;color:var(--mut)}
