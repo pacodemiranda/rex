@@ -55,6 +55,9 @@ A.finishOnb = () => {
   const t = today(), p = R.profile() || {};
   put('profile', 'me', { ...p, nome: (ob.nome || 'Rex').trim() || 'Rex', criado: p.criado || t });
   put('routine', 'current', { plan: ob.plan, since: t });
+  const mon = monday(t), wp = JSON.parse(JSON.stringify(ob.plan)); // refaz a semana atual (pode haver resto de conta antiga)
+  for (let i = 0; i < 7; i++) if (addDays(mon, i) < (p.criado || t)) wp[i] = [];
+  put('week', mon, { plan: wp });
   put('cycle', 'current', { n: 1, start: monday(t), duration: 8, objetivo: (p.objetivos && p.objetivos[0]) || 'Criar constância' });
   ob.planInit = false; nav.go('#/jornada');
 };
