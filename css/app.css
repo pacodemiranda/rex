@@ -148,3 +148,9 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .dlab.now b{color:var(--red)}
 .node .star{top:-6px;right:-8px}
 .hoje{white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis;bottom:-6px;pointer-events:none}
+
+.tabbar{grid-template-columns:1fr 1fr 1.25fr 1fr 1fr;align-items:end;overflow:visible}
+.tabbar a.mid{position:relative;padding-top:34px}
+.tabbar .mbtn{position:absolute;left:50%;top:-40px;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;background:var(--amb);border:5px solid #fff;box-shadow:0 5px 0 var(--ambsh),0 10px 22px rgba(31,10,43,.28);display:flex;align-items:center;justify-content:center;animation:mpulse 1.8s ease-in-out infinite}
+.tabbar .mbtn.ok{background:var(--grn);box-shadow:0 5px 0 var(--grnsh),0 10px 22px rgba(31,10,43,.28);animation:none}
+@keyframes mpulse{50%{transform:translateX(-50%) scale(1.07)}}

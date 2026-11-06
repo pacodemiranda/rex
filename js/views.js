@@ -91,7 +91,7 @@ export function layoutJourney() {
   let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
   let yToday = H * .7;
   s.days.forEach((dd, i) => {
-    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
+    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc - 20, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
     const names = R.labels(dd.plan).join(' + ');
     const pend = st === 'today' || st === 'resttoday';
     let inner = '';
@@ -103,7 +103,7 @@ export function layoutJourney() {
     if (isT) yToday = y;
     const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
     if (isT) { // Rex antes da medalha, para a medalha ficar por cima
-      const rl = Math.max(0, x - msz / 2 - 118);
+      const rl = Math.max(0, x - msz / 2 - 138);
       h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 88}px;width:100px;height:118px;pointer-events:none">`;
     }
     const fb = pend && (cw - (x + msz / 2 + 10) - 8) < 120; // sem espaço ao lado
@@ -144,6 +144,7 @@ A.diaOpen = el => {
     ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? '<p class="small mut">Sem registro nesse dia.</p>' : ''}${date > t ? '<button class="btn" data-act="mudaRotina">MUDAR A ROTINA</button>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
   }
 };
+A.tabMedal = () => { if (!location.hash || location.hash === '#/jornada' || location.hash === '#/') A.diaOpen({ dataset: { d: today() } }); };
 A.mudaRotina = () => { ui.sheet = null; nav.go('#/editar'); };
 A.goCheck = el => {
   ck.date = el.dataset.d || today(); ck.done = null; ck.minutes = 45; ui.sheet = null;
