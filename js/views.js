@@ -86,7 +86,7 @@ export function layoutJourney() {
     const off = FUT - i, mon = addDays(curMon, off * 7), flip = i % 2 === 1, s = off === 0 ? jdata.s : R.weekSummary(mon);
     imgs += `<img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left + (flip ? SHIFT * sc : 0)}px;top:${i * H}px;width:${W}px;height:${H}px;${flip ? 'transform:scaleX(-1);' : ''}">`;
     if (i > 0) { // faixa da semana na emenda entre os tiles
-      const n = c ? c.semana + off + 1 : 0, x = left + xAt(0, flip) * sc, txt = n >= 1 && n <= (c?.duration || 8) ? 'SEMANA ' + n : 'SEMANA DE ' + fmtDM(addDays(mon, 7));
+      const n = c ? c.semana + off + 1 : 0, x = cw / 2, txt = n >= 1 && n <= (c?.duration || 8) ? 'SEMANA ' + n : 'SEMANA DE ' + fmtDM(addDays(mon, 7));
       ribs += `<div class="seam" style="top:${i * H}px"></div><div class="rib" style="left:${x}px;top:${i * H}px"><span>${txt}</span></div>`;
     }
     s.days.forEach((dd, j) => {
