@@ -103,8 +103,8 @@ export function layoutJourney() {
     if (isT) yToday = y;
     const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
     if (isT) { // Rex antes da medalha, para a medalha ficar por cima
-      const rl = Math.max(0, x - msz / 2 - 66);
-      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 50}px;width:74px;height:88px;pointer-events:none">`;
+      const rl = Math.max(0, x - msz / 2 - 118);
+      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 88}px;width:100px;height:118px;pointer-events:none">`;
     }
     const fb = pend && (cw - (x + msz / 2 + 10) - 8) < 120; // sem espaço ao lado
     if (pend) {
