@@ -10,19 +10,21 @@ export const sheetHtml = () => (ui.sheet ? ui.sheet() : '');
 const TOTAL = 8;
 const prog = n => `<div class="progress"><div class="bar"><i style="width:${n * 100 / TOTAL}%"></i></div><span>${n} de ${TOTAL}</span></div>`;
 
-// ---------- boas-vindas ----------
+// ---------- abertura (3 slides) ----------
+const TILES = R.CATALOGO.slice(0, 12).map(([n, e]) => `<span class="tile mini"><i>${e}</i>${esc(n.split(' ')[0])}</span>`).join('');
+const SLIDES = [
+  { h: 'Organize sua rotina de exercícios', p: 'Monte sua semana e acompanhe cada dia.', art: () => rex('empolgado', 170, 202) },
+  { h: 'Qualquer atividade conta', p: 'Academia, esporte, luta, natação, corrida... tudo vira ponto.', art: () => `<div class="tiles-mini">${TILES}</div>` },
+  { h: 'Com a turma, é mais divertido', p: 'Chame os amigos, compare a constância e ganhem medalhas.', art: () => `<div class="slots" style="width:100%">${[0, 1, 2, 3].map(i => `<div class="slot ${i === 0 ? 'me' : ''}">${i === 0 ? rex('base', 44) : ic('plus', '#6B6272', 22)}<small>${i === 0 ? 'Você' : 'Amigo'}</small></div>`).join('')}</div>` }
+];
 export function bemvindo() {
-  const itens = [
-    ['cal', 'Uma rotina semanal que cabe na sua vida: academia, natação, pilates, esporte, o que você gostar.'],
-    ['dumb', 'Treino montado por um profissional a partir do seu perfil, ou o seu próprio.'],
-    ['star', 'Cada dia ativo vira ponto, moeda e medalha. Constância ganha de intensidade.'],
-    ['check', 'Você vê sua evolução e chama os amigos para treinar junto.']
-  ];
-  return { html: screen(`<div class="scroll" style="justify-content:center;gap:18px">
-    <div class="center" style="display:flex;flex-direction:column;align-items:center;gap:6px">${rex('empolgado', 150, 178)}<h1>Mexa-se todo dia com o Rex</h1><p class="mut">Um app divertido para criar o hábito de se exercitar.</p></div>
-    <div style="display:flex;flex-direction:column;gap:10px">${itens.map(([i, t]) => `<div class="benef"><span class="bico">${ic(i, '#fff', 20, 2.6)}</span><p>${t}</p></div>`).join('')}</div>
-  </div><div class="foot"><button class="btn" data-act="welcomeGo" data-m="up">COMEÇAR</button><button class="link" data-act="welcomeGo" data-m="in">Já tenho conta</button></div>`) };
+  const n = ui.slide || 0, sl = SLIDES[n], last = n === SLIDES.length - 1;
+  return { html: screen(`<div class="slide-top"><button class="link" data-act="welcomeGo" data-m="up">Pular</button></div>
+    <div class="scroll" style="justify-content:center;align-items:center;text-align:center;gap:18px"><div class="slide-art">${sl.art()}</div><h1 style="font-size:28px">${sl.h}</h1><p class="mut" style="font-size:17px">${sl.p}</p>
+      <div class="dots slide-dots">${SLIDES.map((_, i) => `<i class="${i === n ? 'on' : ''}"></i>`).join('')}</div></div>
+    <div class="foot">${last ? '<button class="btn" data-act="welcomeGo" data-m="up">COMEÇAR</button>' : '<button class="btn" data-act="slideNext">PRÓXIMO</button>'}<button class="link" data-act="welcomeGo" data-m="in">Já tenho conta</button></div>`) };
 }
+A.slideNext = () => { ui.slide = (ui.slide || 0) + 1; };
 A.welcomeGo = el => { try { localStorage.setItem('rex.welcomed', '1'); } catch (e) {} ui.mode = el.dataset.m; };
 export const welcomed = () => { try { return !!localStorage.getItem('rex.welcomed'); } catch (e) { return false; } };
 
@@ -76,20 +78,20 @@ const STEPS = {
     body: () => `<div class="card"><h2>Atividades que você gosta ou quer fazer</h2>${opts('atividades', R.PREFERENCIAS, true)}</div>
       <div class="card"><h2>Onde você pode treinar?</h2>${opts('locais', LOCAIS, true)}</div>
       <div class="card"><h2>Algo que você não gosta ou quer evitar <span class="opt">OPCIONAL</span></h2><textarea class="field" data-bind="d.evitar" placeholder="Ex.: esteira, bicicleta, corrida...">${esc(d().evitar)}</textarea></div>` },
-  5: { t: 'Sua rotina', msg: 'Última etapa. Quanto tempo e disposição você tem de verdade?', ok: () => ['experiencia', 'parado', 'diasSemana', 'minutos', 'horario', 'sono'].every(k => d()[k]),
+  5: { t: 'Sua rotina', msg: 'Última etapa. Quanto tempo e disposição você tem de verdade?', ok: () => ['experiencia', 'parado', 'diasSemana', 'minutos', 'horario'].every(k => d()[k]),
     body: () => `<div class="card"><h2>Experiência com treino</h2>${opts('experiencia', ['Iniciante', 'Intermediário', 'Avançado'])}</div>
       <div class="card"><h2>Como está sua atividade hoje?</h2>${opts('parado', ['Treino regularmente', 'Parado há menos de 3 meses', 'Parado há 3 a 12 meses', 'Parado há mais de 1 ano', 'Nunca treinei'])}</div>
       <div class="card"><h2>Dias por semana disponíveis</h2>${opts('diasSemana', ['2', '3', '4', '5', '6'])}</div>
       <div class="card"><h2>Tempo por sessão</h2>${opts('minutos', ['30 min', '45 min', '60 min', '90 min'])}</div>
       <div class="card"><h2>Melhor horário</h2>${opts('horario', ['Manhã', 'Almoço', 'Tarde', 'Noite'])}</div>
-      <div class="card"><h2>Sono por noite</h2>${opts('sono', ['Menos de 6h', '6 a 7h', '7 a 8h', 'Mais de 8h'])}</div>` }
+      <div class="card"><h2>Sono por noite <span class="opt">OPCIONAL</span></h2>${opts('sono', ['Menos de 6h', '6 a 7h', '7 a 8h', 'Mais de 8h'])}</div>` }
 };
 export function diag(n) {
   if (!ob.dLoaded) { loadDiag(); ob.dLoaded = true; ob.dEdit = R.diagOk(); }
   const s = STEPS[n], ok = !!s.ok(), last = n === 5;
-  const top = ob.dEdit ? topbar('Meu diagnóstico', '#/perfil', `PASSO ${n} DE 5`) : prog(n);
+  const top = topbar('Ficha para o profissional', ob.dFor === 'pedido' ? '#/programa' : '#/perfil', `PASSO ${n} DE 5`);
   return { html: screen(`${top}<div class="scroll">${bubble(rex('base', 70), s.msg)}<h1 style="font-size:22px">${s.t}</h1>${s.body()}</div>
-    <div class="foot"><button class="btn" data-act="diagNext" data-n="${n}" ${ok ? '' : 'disabled'}>${last ? (ob.dEdit ? 'SALVAR DIAGNÓSTICO' : 'CONCLUIR DIAGNÓSTICO') : 'CONTINUAR'}</button>${n > 1 ? `<button class="link" data-act="go" data-to="#/diag${n - 1}">Voltar</button>` : ''}</div>`) };
+    <div class="foot"><button class="btn" data-act="diagNext" data-n="${n}" ${ok ? '' : 'disabled'}>${last ? (ob.dFor === 'pedido' ? 'ENVIAR PARA O PROFISSIONAL' : 'SALVAR FICHA') : 'CONTINUAR'}</button>${n > 1 ? `<button class="link" data-act="go" data-to="#/diag${n - 1}">Voltar</button>` : ''}</div>`) };
 }
 A.pick = el => { ob.d[el.dataset.k] = el.dataset.v; };
 A.tog = el => { const a = ob.d[el.dataset.k], v = el.dataset.v, i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); };
@@ -101,32 +103,43 @@ A.diagNext = el => {
   const peso = num(D.peso);
   put('profile', 'me', { ...p, ...D, idade: num(D.idade), altura: num(D.altura), peso, metaPeso: num(D.metaPeso), diagOk: true, diagAt: t });
   put('medida', t, { peso, date: t });
-  const edit = ob.dEdit; ob.dLoaded = false;
-  if (edit) { ui.toast = 'Diagnóstico atualizado.'; nav.go('#/perfil'); } else nav.go('#/prog');
+  const pedido = ob.dFor === 'pedido'; ob.dLoaded = false; ob.dFor = null;
+  if (pedido) { put('request', 'programa', { status: 'pedido', at: new Date().toISOString() }); ui.toast = 'Pedido enviado. Seu treino chega em até 24h.'; nav.go('#/programa'); }
+  else { ui.toast = 'Ficha atualizada.'; nav.go('#/perfil'); }
 };
 export const stepOk = n => !!STEPS[n].ok();
 export function leaveDiag() { ob.dLoaded = false; }
 
-// ---------- montagem do treino ----------
-export function progEscolha() {
-  const onboarded = R.isOnboarded();
-  return { html: screen(`${prog(6)}<div class="scroll">
-    ${bubble(rex('empolgado', 80, 94), 'Agora vamos montar o seu treino. Escolha como prefere começar.')}
-    <div class="card opt-card"><span class="tag">RECOMENDADO</span><h2>Quero um profissional</h2><p class="mut">Um profissional lê seu diagnóstico, seus objetivos e o que você gosta, e monta o treino e a rotina da semana. Entrega em até 24 horas.</p><button class="btn" data-act="pedirPro">CHAMAR UM PROFISSIONAL</button></div>
-    <div class="card opt-card"><h2>Já tenho um programa pronto</h2><p class="mut">Cole o programa que você recebeu e o app cria os treinos e a rotina.</p><button class="btn2" data-act="go" data-to="#/progcolar">COLAR PROGRAMA</button></div>
-    <div class="card opt-card"><h2>Quero criar meu próprio treino</h2><p class="mut">Cadastre seus treinos e exercícios do seu jeito.</p><button class="btn2" data-act="go" data-to="#/programa">CRIAR MEU TREINO</button></div>
-  </div><div class="foot"><button class="link" data-act="go" data-to="#/diag5">Voltar ao diagnóstico</button></div>`) };
+// ---------- atividades ----------
+export function atv() {
+  const edit = R.isOnboarded();
+  if (!ob.atvLoaded) { ob.atv = [...(R.profile()?.atividades || [])]; ob.atvLoaded = true; }
+  const todas = [...R.CATALOGO, ...ob.atv.filter(a => !R.ATIVIDADES.includes(a)).map(a => [a, '⭐'])];
+  const top = edit ? topbar('Minhas atividades', '#/perfil') : `<div class="progress"><div class="bar"><i style="width:50%"></i></div><span>1 de 2</span></div>`;
+  return { html: screen(`${top}<div class="scroll"><h1 style="font-size:24px">O que você quer organizar?</h1>
+    <p class="mut">Marque o que você já faz ou quer fazer. Cada dia ativo conta. Dá para mudar depois.</p>
+    <div class="tiles">${todas.map(([n, e]) => `<button class="tile ${ob.atv.includes(n) ? 'on' : ''}" data-act="atvTog" data-v="${esc(n)}"><i>${e}</i>${esc(n)}${R.temPrograma(n) ? '<em>com treino</em>' : ''}</button>`).join('')}
+      <button class="tile add" data-act="atvOutra"><i>+</i>Outra</button></div></div>
+    <div class="foot"><button class="btn" data-act="atvNext" ${ob.atv.length ? '' : 'disabled'}>${edit ? 'SALVAR' : 'CONTINUAR'}</button></div>${sheetHtml()}`) };
 }
-A.pedirPro = () => {
-  put('request', 'programa', { status: 'pedido', at: new Date().toISOString() });
-  ui.toast = 'Pedido enviado. Seu treino chega em até 24h.';
-  if (!R.routine()) nav.go('#/onb2'); else nav.go('#/jornada');
+A.atvTog = el => { const v = el.dataset.v, i = ob.atv.indexOf(v); if (i >= 0) ob.atv.splice(i, 1); else ob.atv.push(v); };
+A.atvOutra = () => {
+  ui.f = { nome: '' };
+  ui.sheet = () => sheet(`<h2>Outra atividade</h2><input class="field" data-bind="f.nome" maxlength="24" placeholder="Ex.: Remo, Escalada, Capoeira" value="${esc(ui.f.nome)}"><button class="btn" data-act="atvAdd">ADICIONAR</button><button class="link" data-act="sheetClose">Cancelar</button>`);
 };
+A.atvAdd = () => { const n = (ui.f.nome || '').trim(); if (n && !ob.atv.includes(n)) ob.atv.push(n); ui.sheet = null; };
+A.atvNext = () => {
+  const edit = R.isOnboarded();
+  put('profile', 'me', { ...(R.profile() || {}), atividades: [...ob.atv] });
+  ob.atvLoaded = false;
+  if (edit) { ui.toast = 'Atividades atualizadas.'; nav.go('#/perfil'); } else { ob.planInit = false; nav.go('#/onb2'); }
+};
+A.pedirPro = () => { ob.dFor = 'pedido'; ob.dLoaded = false; nav.go('#/diag1'); };
 
 // ---------- colar programa ----------
 export function progColar() {
   const v = ui.val, onb = R.isOnboarded();
-  return { html: screen(`${topbar('Colar programa', onb ? '#/programa' : '#/prog')}<div class="scroll">
+  return { html: screen(`${topbar('Colar programa', '#/programa')}<div class="scroll">
     <p class="mut">Cole aqui o programa no formato JSON que o profissional (ou o Claude) te enviou.</p>
     <textarea class="field code" data-bind="ui.texto" placeholder='{ "name": "...", "workouts": [ ... ] }'>${esc(ui.texto)}</textarea>
     <button class="btn2" data-act="colarClip">COLAR DA ÁREA DE TRANSFERÊNCIA</button>
@@ -139,22 +152,23 @@ A.importar = () => {
   const j = ui.val?.j; if (!j) return;
   P.salvarPrograma(j, 'colado');
   ui.texto = ''; ui.val = null;
-  if (R.isOnboarded()) { ui.toast = 'Programa importado. Ajuste a rotina se quiser.'; nav.go('#/programa'); return; }
-  ob.plan = P.planoDoSchedule(j); ob.planInit = true;
-  nav.go('#/onb2');
+  ui.toast = 'Programa importado. Ajuste a rotina se quiser.'; nav.go('#/programa');
 };
 
 // ---------- construir/ver programa ----------
 export function programa() {
-  const p = R.program() || P.programaVazio(), onb = R.isOnboarded();
-  return { html: screen(`${onb ? '' : topbar('Meu programa', '#/prog')}<div class="scroll">${onb ? '<h1 style="padding-top:14px">Meu programa</h1>' : ''}
-    ${R.pedido() && !R.program() ? banner('Seu pedido ao profissional está em andamento. Quando o programa chegar, é só colar aqui.', 'amb') : ''}
-    ${p.workouts.length ? p.workouts.map(w => `<div class="card"><div class="row2"><div><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''}</p></div><button class="icobtn sm" data-act="rmTreino" data-id="${esc(w.id)}" aria-label="Remover treino">${ic('close', '#6B6272', 16)}</button></div>
+  const p = R.program() || P.programaVazio(), tem = p.workouts.length > 0, pend = R.pedido() && !R.program();
+  const caminhos = `${pend ? banner('Seu pedido ao profissional está em andamento. Chega em até 24h. Quando o programa chegar, é só colar aqui.', 'amb') : `<div class="card opt-card"><span class="tag">COM AJUDA</span><h2>Chamar um profissional</h2><p class="mut">Um profissional monta o treino com base no seu perfil e no que você gosta. Entrega em até 24 horas.</p><button class="btn" data-act="pedirPro">CHAMAR UM PROFISSIONAL</button></div>`}
+    <div class="card opt-card"><h2>Já tenho um programa</h2><p class="mut">Cole o programa que você recebeu e o app cria os treinos.</p><button class="btn2" data-act="go" data-to="#/progcolar">COLAR PROGRAMA</button></div>
+    <div class="card opt-card"><h2>Criar o meu treino</h2><p class="mut">Cadastre seus treinos e exercícios do seu jeito.</p><button class="btn2" data-act="novoTreino">CRIAR MEU TREINO</button></div>`;
+  return { html: screen(`<div class="scroll"><h1 style="padding-top:14px">Meu programa</h1>
+    ${tem ? `${pend ? banner('Seu pedido ao profissional está em andamento. Chega em até 24h.', 'amb') : ''}${p.workouts.map(w => `<div class="card"><div class="row2"><div><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''}</p></div><button class="icobtn sm" data-act="rmTreino" data-id="${esc(w.id)}" aria-label="Remover treino">${ic('close', '#6B6272', 16)}</button></div>
       ${w.exercises.map(e => `<div class="exrow"><span>${esc(p.exercises[e.ex]?.name || e.ex)}</span><b>${e.sets}x ${esc(e.mode === 'time' ? e.seconds + 's' : e.reps)}</b></div>`).join('') || '<p class="small mut">Sem exercícios ainda.</p>'}
-      <button class="btn2" data-act="novoEx" data-id="${esc(w.id)}">+ EXERCÍCIO</button></div>`).join('') : banner('Nenhum treino ainda. Crie o primeiro abaixo ou cole um programa pronto.', 'gray')}
+      <button class="btn2" data-act="novoEx" data-id="${esc(w.id)}">+ EXERCÍCIO</button></div>`).join('')}
     <button class="btn2" data-act="novoTreino">+ NOVO TREINO</button>
-    <button class="link" data-act="go" data-to="#/progcolar">Colar um programa pronto${p.workouts.length ? ' (substitui o atual)' : ''}</button>
-  </div>${!onb ? `<div class="foot"><button class="btn" data-act="progFim" ${p.workouts.length ? '' : 'disabled'}>CONTINUAR</button></div>` : tabbar('programa')}${sheetHtml()}`) };
+    <button class="link" data-act="go" data-to="#/progcolar">Colar um programa pronto (substitui o atual)</button>${pend ? '' : '<button class="link" data-act="pedirPro">Chamar um profissional</button>'}`
+    : `<p class="mut">Atividades como musculação e funcional têm treino com exercícios e cargas. Como você quer montar o seu?</p>${caminhos}`}
+  </div>${tabbar('programa')}${sheetHtml()}`) };
 }
 const salvaProg = p => put('program', 'current', { ...p, source: p.source || 'manual' });
 A.novoTreino = () => {
@@ -177,4 +191,3 @@ A.criaEx = el => {
   const exercises = { ...p.exercises }; if (!exercises[ex]) exercises[ex] = { name: ui.f.nome.trim(), video: '', cues: [], warn: '' };
   salvaProg({ ...p, exercises, workouts: p.workouts.map(w => w.id === el.dataset.id ? { ...w, exercises: [...w.exercises, { ex, sets: num(ui.f.series) || 3, reps: ui.f.reps || '10', rest: 60 }] } : w) }); ui.sheet = null;
 };
-A.progFim = () => { ob.planInit = false; nav.go('#/onb2'); };

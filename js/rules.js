@@ -1,8 +1,12 @@
 import { today, monday, addDays, dow } from './util.js';
 import { getRec, list, put } from './store.js';
 
-export const ATIVIDADES = ['Corrida', 'Caminhada', 'Natação', 'Vôlei', 'Futevôlei', 'Futebol', 'Tênis', 'Pilates', 'Yoga', 'Luta', 'Dança', 'Funcional', 'Bicicleta', 'Alongamento', 'Outra atividade'];
-export const PREFERENCIAS = ['Academia', ...ATIVIDADES.filter(a => a !== 'Outra atividade'), 'Outro'];
+export const CATALOGO = [['Musculação', '🏋️'], ['Funcional', '🔥'], ['Corrida', '🏃'], ['Caminhada', '🚶'], ['Natação', '🏊'], ['Futevôlei', '🏐'], ['Vôlei', '🏐'], ['Futebol', '⚽'], ['Tênis', '🎾'], ['Jiu-jitsu / Lutas', '🥋'], ['Pilates', '🤸'], ['Yoga', '🧘'], ['Dança', '💃'], ['Ciclismo', '🚴']];
+export const ATIVIDADES = CATALOGO.map(c => c[0]);
+export const PREFERENCIAS = ATIVIDADES;
+// Atividades que têm programa de treino (exercícios, séries, carga). As demais são só registro.
+export const PROG_ATIV = ['Musculação', 'Funcional', 'Academia'];
+export const temPrograma = a => PROG_ATIV.includes(a);
 export const MIN_VALIDO = 20;
 export const emptyPlan = () => ({ 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] });
 export const planOf = r => ({ ...emptyPlan(), ...(r || {}) });
@@ -13,7 +17,7 @@ export const cycle = () => getRec('cycle', 'current')?.data || null;
 export const program = () => getRec('program', 'current')?.data || null;
 export const pedido = () => getRec('request', 'programa')?.data || null;
 export const diagOk = () => !!profile()?.diagOk;
-export const isOnboarded = () => !!(diagOk() && (program() || pedido()) && routine() && cycle());
+export const isOnboarded = () => !!(routine() && cycle());
 // Itens da rotina: 'w:<id>' é um treino do programa; texto livre é outra atividade
 export const label = it => { if (typeof it === 'string' && it.startsWith('w:')) { const w = program()?.workouts?.find(x => x.id === it.slice(2)); return w ? w.name : 'Treino'; } return it; };
 export const labels = arr => (arr || []).map(label);

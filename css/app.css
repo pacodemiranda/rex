@@ -161,3 +161,16 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .tabbar .mbtn.ok{box-shadow:0 4px 0 var(--grnsh),0 6px 14px rgba(31,10,43,.22)}
 @keyframes mpulse{50%{transform:scale(1.08)}}
 .node.pre{opacity:.6;border-style:dashed}
+
+button.link-row{width:100%;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+.slide-top{display:flex;justify-content:flex-end;padding:8px 14px 0;flex:none}.slide-top .link{width:auto;padding:8px 10px}
+.slide-art{min-height:210px;display:flex;align-items:center;justify-content:center;width:100%}
+.slide-dots{justify-content:center;margin-top:4px}.slide-dots i{width:10px;height:10px;border-radius:5px}
+.tiles-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;padding:8px 4px;border-radius:18px;border:2px solid var(--line);background:#fff;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink);text-align:center;cursor:pointer;position:relative}
+.tile i{font-style:normal;font-size:30px;line-height:1}
+.tile em{font-style:normal;font-size:10px;font-weight:900;letter-spacing:.04em;color:var(--pur);position:absolute;top:5px;right:7px}
+.tile.on{border-color:var(--pur);background:#F3E9F8;box-shadow:0 3px 0 var(--pur)}
+.tile.add{border-style:dashed;color:var(--mut)}.tile.add i{font-size:28px;font-weight:900}
+.tile.mini{min-height:74px;font-size:11px;border-color:transparent;background:#fff;box-shadow:0 2px 8px rgba(31,10,43,.1)}.tile.mini i{font-size:26px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}

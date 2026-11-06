@@ -23,42 +23,32 @@ export function onb2() {
   if (!edit && !ob.planInit) { const pg = R.program(); ob.plan = pg?.schedule ? P.planoDoSchedule(pg) : R.emptyPlan(); ob.planInit = true; }
   const n = Object.values(ob.plan).filter(a => a.length).length, pg = R.program();
   const sug = pg?.schedule ? 'Já deixei a rotina sugerida pelo seu programa. Ajuste como preferir.' : 'Toque no + para escolher o que fazer em cada dia.';
-  return { html: screen(`${edit ? '' : `<div class="progress"><div class="bar"><i style="width:${7 * 100 / 8}%"></i></div><span>7 de 8</span></div>`}<div class="scroll">
+  return { html: screen(`${edit ? '' : `<div class="progress"><div class="bar"><i style="width:100%"></i></div><span>2 de 2</span></div>`}<div class="scroll">
     ${edit ? '<h1 style="padding-top:14px">Minha rotina</h1>' : '<h1>Organize a sua semana</h1>'}
     <p class="mut">${sug} Toque numa atividade para remover. Mais de uma no mesmo dia vira um número na medalha.</p>
     ${!pg && R.pedido() ? banner('Seu treino chega em até 24h. Por ora, marque os dias em que pretende se mexer. Depois você encaixa os treinos.', 'amb') : ''}
     <div style="display:flex;flex-direction:column;gap:8px">${weekRows(edit ? dow(today()) : -1)}</div>
     <div class="card"><h2>Meta da semana: ${n} ${n === 1 ? 'dia' : 'dias'} com atividade</h2><p class="small mut">A semana (etapa) fecha quando você chega nessa meta.</p></div>
     ${edit ? `<button class="btn" data-act="saveRoutine" ${n ? '' : 'disabled'}>SALVAR ROTINA</button>` : ''}
-  </div>${edit ? tabbar('editar') : `<div class="foot"><button class="btn" data-act="go" data-to="#/onb3" ${n ? '' : 'disabled'}>CONTINUAR</button><button class="link" data-act="go" data-to="#/prog">Voltar</button></div>`}${sheetHtml()}`) };
+  </div>${edit ? tabbar('editar') : `<div class="foot"><button class="btn" data-act="finishOnb" ${n ? '' : 'disabled'}>COMEÇAR MINHA JORNADA</button><button class="link" data-act="go" data-to="#/atv">Voltar</button></div>`}${sheetHtml()}`) };
 }
 A.rmAct = el => { ob.plan[+el.dataset.d].splice(+el.dataset.i, 1); };
 A.addAct = el => {
   const d = +el.dataset.d, wk = R.program()?.workouts || [], p = R.profile() || {};
-  const prefs = (p.atividades || []).filter(a => a !== 'Outro' && !(wk.length && a === 'Academia'));
-  const outras = [...new Set(['Academia', ...R.ATIVIDADES.filter(a => a !== 'Outra atividade')])].filter(a => !prefs.includes(a) && !(wk.length && a === 'Academia'));
+  const prefs = (p.atividades || []).filter(a => !(wk.length && R.temPrograma(a)));
+  const outras = R.ATIVIDADES.filter(a => !prefs.includes(a) && !(wk.length && R.temPrograma(a)));
   const sec = (t, arr) => arr.length ? `<div class="lab">${t}</div><div class="chips">${arr.map(([v, t2]) => chip(t2, ob.plan[d].includes(v), `data-act="chooseAct" data-d="${d}" data-v="${esc(v)}"`)).join('')}</div>` : '';
   ui.sheet = () => sheet(`<h2>${DIAS_LONGO[d]}: escolha a atividade</h2>${sec('SEUS TREINOS', wk.map(w => ['w:' + w.id, w.name]))}${sec('O QUE VOCÊ GOSTA', prefs.map(a => [a, a]))}${sec('OUTRAS', outras.map(a => [a, a]))}<button class="btn" data-act="sheetClose">PRONTO</button>`);
 };
 A.chooseAct = el => { const d = +el.dataset.d, v = el.dataset.v, a = ob.plan[d]; const i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); A.addAct({ dataset: { d } }); };
 A.sheetClose = () => { ui.sheet = null; };
 
-export function onb3() {
-  return { html: screen(`<div class="progress"><div class="bar"><i style="width:100%"></i></div><span>8 de 8</span></div><div class="scroll center" style="align-items:stretch">
-    <div style="display:flex;justify-content:center;padding-top:10px"><div style="width:190px;height:190px;border-radius:95px;background:#EEF6EA;display:flex;align-items:center;justify-content:center">${rex('empolgado', 130, 154)}</div></div>
-    <h1 style="text-align:center">Esse é o seu parceiro de jornada</h1>
-    <p class="mut" style="text-align:center">Ele treina com você, comemora cada check-in e nunca te cobra. Dê um nome a ele.</p>
-    <input class="field" data-bind="nome" value="${esc(ob.nome)}" maxlength="16" aria-label="Nome do Rex">
-    <div class="chips" style="justify-content:center">${['Rex', 'Dino', 'Sauro'].map(n => chip(n, ob.nome === n, `data-act="setNome" data-v="${n}"`)).join('')}</div>
-  </div><div class="foot"><button class="btn" data-act="finishOnb">COMEÇAR MINHA JORNADA</button><button class="link" data-act="go" data-to="#/onb2">Voltar</button></div>`) };
-}
-A.setNome = el => { ob.nome = el.dataset.v; };
 A.finishOnb = () => {
   const t = today(), p = R.profile() || {};
-  put('profile', 'me', { ...p, nome: (ob.nome || 'Rex').trim() || 'Rex', criado: p.criado || t });
+  put('profile', 'me', { ...p, nome: p.nome || 'Rex', criado: p.criado || t });
   put('routine', 'current', { plan: ob.plan, since: t });
   put('week', monday(t), { plan: JSON.parse(JSON.stringify(ob.plan)) }); // refaz a semana atual (pode haver resto de conta antiga)
-  put('cycle', 'current', { n: 1, start: monday(t), duration: 8, objetivo: (p.objetivos && p.objetivos[0]) || 'Criar constância' });
+  put('cycle', 'current', { n: 1, start: monday(t), duration: 8, objetivo: 'Criar constância' });
   ob.planInit = false; nav.go('#/jornada');
 };
 
@@ -128,14 +118,16 @@ addEventListener('resize', layoutJourney);
 A.diaOpen = el => {
   const date = el.dataset.d, t = today(), plan = R.weekPlan(monday(date))[dow(date)] || [], pg = R.program();
   const cks = R.checkinsOn(date), feitos = cks.length ? `<p class="small mut">Registrado: ${cks.map(c => esc((c.names || c.acts).join(' + ')) + ' (' + c.minutes + ' min)').join('; ')}</p>` : '';
-  const ws = plan.filter(x => x.startsWith('w:')).map(x => pg?.workouts.find(w => w.id === x.slice(2))).filter(Boolean);
-  const outras = plan.filter(x => !x.startsWith('w:'));
+  let ws = plan.filter(x => x.startsWith('w:')).map(x => pg?.workouts.find(w => w.id === x.slice(2))).filter(Boolean);
+  const comProg = plan.filter(x => R.temPrograma(x)); // ex.: "Musculação" na rotina
+  if (comProg.length && pg) ws = [...new Set([...ws, ...pg.workouts])];
+  const outras = plan.filter(x => !x.startsWith('w:') && !(pg && R.temPrograma(x)));
   if (date === t) {
     const wk = getWk();
     ui.sheet = () => sheet(`<h2>Hoje · ${fmtData(date)}</h2>${feitos}
       ${ws.map(w => `<div class="card soft"><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''} · ${w.exercises.length} exercícios</p><p class="small">${esc(w.exercises.slice(0, 3).map(e => pg.exercises[e.ex]?.name || e.ex).join(', '))}${w.exercises.length > 3 ? '...' : ''}</p><button class="btn" data-act="wkStart" data-id="${esc(w.id)}">${wk && wk.id === w.id && wk.date === date ? 'CONTINUAR TREINO' : 'INICIAR TREINO'}</button></div>`).join('')}
       ${outras.map(o => `<button class="btn${ws.length ? '2' : ''}" data-act="goCheck" data-d="${date}" data-sel="${esc(o)}">REGISTRAR ${esc(o.toUpperCase())}</button>`).join('')}
-      ${!plan.length ? '<p class="mut">Hoje é descanso planejado. Se você se mexer, vira bônus.</p>' : ''}
+      ${comProg.length && !pg ? `<p class="small mut">Você ainda não tem treino montado para ${esc(comProg[0])}. Monte na aba Programa.</p>` : ''}${!plan.length ? '<p class="mut">Hoje é descanso planejado. Se você se mexer, vira bônus.</p>' : ''}
       <button class="${plan.length ? 'btn2' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'FAZER OUTRA ATIVIDADE' : 'REGISTRAR UMA ATIVIDADE'}</button><button class="link" data-act="mudaRotina">Mudar a rotina</button>`);
   } else if (date === addDays(t, -1) && !R.validCount(date)) {
     ui.sheet = () => sheet(`<h2>Ontem · ${fmtData(date)}</h2><p class="mut">Sem registro. Esqueceu? Dá para registrar até o fim de hoje.</p><button class="btn" data-act="goCheck" data-d="${date}" data-free="1">REGISTRAR ONTEM</button><button class="link" data-act="sheetClose">Fechar</button>`);
@@ -185,7 +177,7 @@ A.ckSave = () => {
   const rec = { date: ck.date, acts: [...ck.sel], names: R.labels(ck.sel), minutes: ck.minutes, planned: ck.sel.some(a => plan.includes(a)), pts: pr.pts, coins: pr.coins, at: new Date().toISOString() };
   put('checkin', `${ck.date}-${uid()}`, rec); ck.done = rec;
 };
-const outras = () => [...(R.program()?.workouts || []).map(w => 'w:' + w.id), ...new Set(['Academia', ...R.ATIVIDADES.filter(a => a !== 'Outra atividade')])];
+const outras = () => [...(R.program()?.workouts || []).map(w => 'w:' + w.id), ...new Set([...(R.profile()?.atividades || []), ...R.ATIVIDADES])];
 A.ckFinish = () => { ck.done = null; nav.go('#/jornada'); };
 
 // ---------- armário ----------
@@ -243,12 +235,19 @@ export function perfil() {
     <div class="card"><div class="row2"><div><div class="lab">PESO ATUAL</div><div style="font-size:26px;font-weight:900">${peso ? String(peso).replace('.', ',') + ' kg' : '-'}</div>${p?.metaPeso ? `<p class="small mut">Meta: ${String(p.metaPeso).replace('.', ',')} kg</p>` : ''}</div><button class="btn2" style="width:auto;padding:12px 16px" data-act="pesoSheet">ATUALIZAR</button></div></div>
     ${row('#/evolucao', 'star', 'Evolução', 'Histórico de check-ins e pontos')}
     ${row('#/armario', 'lock', 'Armário', 'Medalhas e acessórios do ' + rexNome())}
-    ${row('#/diag1', 'warn', 'Meu diagnóstico', 'Revise objetivos, saúde e preferências')}
+    ${row('#/atv', 'star', 'Minhas atividades', (p?.atividades || []).slice(0, 4).join(', ') || 'Escolha o que você quer organizar')}
+    <button class="link-row" data-act="nomeSheet">${ic('star')}<span>Nome do Rex<small>${esc(p?.nome || 'Rex')}</small></span>${ic('chev', '#6B6272', 18)}</button>
+    ${row('#/diag1', 'warn', 'Ficha para o profissional', 'Seus dados para quem monta o treino')}
     <div class="card soft"><p class="small">${msg}</p><button class="btn2" data-act="syncNow">SINCRONIZAR AGORA</button></div>
     <button class="btn2" data-act="logout">SAIR DA CONTA</button>
     <p class="small mut" style="text-align:center">Rex versão ${ui.version}</p>
   </div>${tabbar('perfil')}${sheetHtml()}`) };
 }
+A.nomeSheet = () => {
+  ui.f = { nome: R.profile()?.nome || 'Rex' };
+  ui.sheet = () => sheet(`<h2>Nome do seu parceiro</h2><input class="field" data-bind="f.nome" maxlength="16" value="${esc(ui.f.nome)}" aria-label="Nome do Rex"><button class="btn" data-act="salvaNome">SALVAR</button><button class="link" data-act="sheetClose">Cancelar</button>`);
+};
+A.salvaNome = () => { put('profile', 'me', { ...R.profile(), nome: (ui.f.nome || '').trim() || 'Rex' }); ui.sheet = null; };
 A.pesoSheet = () => {
   const p = R.profile(); ui.f = { peso: String(p?.peso ?? '').replace('.', ',') };
   ui.sheet = () => sheet(`<h2>Atualizar peso</h2><div class="inl"><input class="field" inputmode="decimal" data-bind="f.peso" placeholder="Ex.: 80,5" value="${esc(ui.f.peso)}"><span class="unit">kg</span></div><button class="btn" data-act="salvaPeso">SALVAR</button><button class="link" data-act="sheetClose">Cancelar</button>`);
