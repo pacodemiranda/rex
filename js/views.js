@@ -63,55 +63,64 @@ export function jornada() {
   return { html: screen(`<div class="hdr2"><div><div class="eyebrow">CICLO ${c.n} · ${esc((c.objetivo || '').toUpperCase())}</div><h1>Semana ${c.semana} de ${c.duration}</h1></div>
     <div class="etp"><b>${c.etapas}/${c.duration}</b><span>ETAPAS</span></div></div>
     <div class="wkline"><div class="dots">${dots}</div><span>${s.active} de ${s.meta} dias ativos</span></div>${pedido}
-    <div id="jwin"></div>${tabbar('jornada')}${sheetHtml()}`, 'jr'), after: layoutJourney };
+    <div id="jwin"></div><button class="hoje-btn" id="hojebtn" data-act="irHoje">Hoje</button>${tabbar('jornada')}${sheetHtml()}`, 'jr'), after: layoutJourney };
 }
-// posições dos 7 dias ao longo da curva do caminho (distância igual ao longo da curva)
-const SEG = PATH.filter(p => p[0] >= 190 && p[0] <= 705).reverse(); // 0 = segunda (embaixo)
-const CUM = SEG.reduce((a, p, i) => { a.push(i ? a[i - 1] + Math.hypot(p[0] - SEG[i - 1][0], p[1] - SEG[i - 1][1]) : 0); return a; }, []);
-function pointAt(a) {
-  for (let k = 1; k < SEG.length; k++) if (CUM[k] >= a) { const t = (a - CUM[k - 1]) / ((CUM[k] - CUM[k - 1]) || 1); return [SEG[k - 1][0] + (SEG[k][0] - SEG[k - 1][0]) * t, SEG[k - 1][1] + (SEG[k][1] - SEG[k - 1][1]) * t]; }
-  return SEG[SEG.length - 1];
+// Linha do tempo infinita: cada semana é um "tile" do cenário (alternando espelhado para emendar o caminho).
+// O dia de hoje fica sempre numa posição fixa da tela (ao carregar/voltar), com o Rex ao lado.
+const SLOT = 823 / 7, SHIFT = 15;
+function xAt(imgY, flip) {
+  const last = PATH[PATH.length - 1][0], y = Math.max(0, Math.min(last, imgY));
+  let x = PATH[PATH.length - 1][1];
+  for (let k = 1; k < PATH.length; k++) if (PATH[k][0] >= y) { const [y0, x0] = PATH[k - 1], [y1, x1] = PATH[k]; x = y1 === y0 ? x1 : x0 + (x1 - x0) * (y - y0) / (y1 - y0); break; }
+  return flip ? 390 - x + SHIFT : x;
 }
+const fmtDM = d => { const [, m, dd] = d.split('-'); return `${+dd}/${+m}`; };
 export function layoutJourney() {
   const win = document.getElementById('jwin'); if (!win || !jdata) return;
-  const { s, cen } = jdata, cw = win.clientWidth, wh = win.clientHeight;
-  const sc = Math.max(cw / 390, wh / 823) * 1.15, W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 66, msz = 88, L = CUM[CUM.length - 1];
-  let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
-  let yToday = H * .7;
-  s.days.forEach((dd, i) => {
-    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
-    const names = R.labels(dd.plan).join(' + ');
-    const pend = st === 'today' || st === 'resttoday';
-    let inner = '';
-    if (st === 'done') inner = ic('check', '#1F0A2B', 32, 3.5);
-    else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 30, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
-    else if (st === 'absent') inner = ic('minus', '#6B6272', 28);
-    else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 30, 2.6);
-    else if (st === 'pre') inner = ic(dd.plan.length ? 'dumb' : 'moon', '#B8B0BE', 28, 2.6);
-    else if (st === 'future') inner = ic('dumb', '#9A92A0', 30, 2.6);
-    if (isT) yToday = y;
-    const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
-    if (isT) { // Rex antes da medalha, para a medalha ficar por cima
-      const rl = Math.max(0, x - msz / 2 - 138);
-      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 88}px;width:100px;height:118px;pointer-events:none">`;
+  const cw = win.clientWidth, wh = win.clientHeight, t = today(), curMon = monday(t), cr = R.profile()?.criado, c = R.cycleInfo();
+  const sc = Math.max(cw / 390, wh / 823) * 1.15, W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 66, msz = 88;
+  const past = Math.max(0, Math.min(3, cr ? Math.round((new Date(curMon) - new Date(monday(cr))) / (7 * 864e5)) : 0)), FUT = 2;
+  const nW = FUT + past + 1;
+  let imgs = '', ribs = '', nodes = '', labs = '', rexH = '', yToday = 0;
+  for (let i = 0; i < nW; i++) {
+    const off = FUT - i, mon = addDays(curMon, off * 7), flip = i % 2 === 1, s = off === 0 ? jdata.s : R.weekSummary(mon);
+    imgs += `<img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left + (flip ? SHIFT * sc : 0)}px;top:${i * H}px;width:${W}px;height:${H}px;${flip ? 'transform:scaleX(-1);' : ''}">`;
+    if (i > 0) { // faixa da semana na emenda entre os tiles
+      const n = c ? c.semana + off + 1 : 0, x = left + xAt(0, flip) * sc, txt = n >= 1 && n <= (c?.duration || 8) ? 'SEMANA ' + n : 'SEMANA DE ' + fmtDM(addDays(mon, 7));
+      ribs += `<div class="seam" style="top:${i * H}px"></div><div class="rib" style="left:${x}px;top:${i * H}px"><span>${txt}</span></div>`;
     }
-    const fb = pend && (cw - (x + msz / 2 + 10) - 8) < 120; // sem espaço ao lado
-    if (pend) {
-      const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16;
-      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}<span class="hoje">${fb ? 'HOJE · ' + esc(txt) : 'HOJE'}</span></button>`;
-    } else {
-      h += `<button class="node ${st}" data-act="diaOpen" data-d="${dd.date}" aria-label="${DIAS_LONGO[i]}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</button>`;
-    }
-    const off = (pend ? msz / 2 + 10 : size / 2 + 8), room = cw - (x + off) - 8;
-    if (!fb) {
-      const pos = (pend || onLeft) ? `left:${x + off}px;max-width:${Math.min(room, 190)}px` : `right:${cw - x + off}px`;
-      h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - (isT ? 15 : 13)}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
-    }
-  });
-  win.innerHTML = h + '</div>';
-  const max = H - wh; if (jScroll == null) jScroll = Math.max(0, Math.min(max, yToday - wh * .58));
-  win.scrollTop = jScroll; win.addEventListener('scroll', () => { jScroll = win.scrollTop; }, { passive: true });
+    s.days.forEach((dd, j) => {
+      const dS = (H - 64) / 7, y = i * H + H - 32 - (j + .5) * dS, imgY = (y - i * H) / sc, st = dd.state, isT = dd.date === t, pend = st === 'today' || st === 'resttoday';
+      let x = left + xAt(imgY, flip) * sc;
+      const names = R.labels(dd.plan).join(' + ');
+      if (isT) { x = Math.max(cw * .42, Math.min(cw - 70, x)); yToday = y; }
+      let inner = '';
+      if (st === 'done') inner = ic('check', '#1F0A2B', 32, 3.5);
+      else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 30, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
+      else if (st === 'absent') inner = ic('minus', '#6B6272', 28);
+      else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 30, 2.6);
+      else if (st === 'pre') inner = ic(dd.plan.length ? 'dumb' : 'moon', '#B8B0BE', 28, 2.6);
+      else if (st === 'future') inner = ic('dumb', '#9A92A0', 30, 2.6);
+      if (isT) {
+        const n = dd.plan.length > 1 && pend ? dd.plan.length : 0, bs = msz + 16, fin = st === 'done' || st === 'bonus';
+        nodes += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px">${pend ? '<div class="halo"></div>' + medal(msz, n) : `<div class="bigok">${ic('check', '#fff', 44, 4)}</div>`}</button>`;
+        rexH = `<img class="rex" src="assets/rex/${fin ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="left:${Math.max(-8, x - msz / 2 - 104)}px;top:${y - 62}px;width:96px;height:114px">`;
+      } else nodes += `<button class="node ${st}" data-act="diaOpen" data-d="${dd.date}" aria-label="${DIAS_LONGO[j]} ${fmtDM(dd.date)}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</button>`;
+      const ly = y + (isT ? msz / 2 + 8 : size / 2 + 3);
+      labs += `<div class="nl ${isT ? 'now' : ''}" style="left:${Math.max(76, Math.min(cw - 76, x))}px;top:${ly}px">${isT ? `<small>HOJE · ${DIAS_LONGO[j].toUpperCase()}</small>` : `<small>${DIAS[j].toUpperCase()} ${fmtDM(dd.date)}</small>`}${names ? `<b>${esc(names)}</b>` : (isT ? '<b>Descanso</b>' : '')}</div>`;
+    });
+  }
+  win.innerHTML = `<div class="jin" style="height:${nW * H}px">${imgs}${ribs}${rexH}${nodes}${labs}</div>`;
+  const max = nW * H - wh, target = Math.max(0, Math.min(max, yToday - wh * .58));
+  if (jScroll == null) jScroll = target;
+  win.scrollTop = jScroll;
+  const btn = document.getElementById('hojebtn');
+  const upd = () => { jScroll = win.scrollTop; if (btn) { const d = win.scrollTop - target; btn.classList.toggle('show', Math.abs(d) > 170); btn.textContent = d > 0 ? '↓ Hoje' : '↑ Hoje'; } };
+  upd(); win.addEventListener('scroll', upd, { passive: true });
+  jTarget = target;
 }
+let jTarget = 0;
+A.irHoje = () => { jScroll = jTarget; };
 addEventListener('resize', layoutJourney);
 
 // toque num dia: popup com a ação certa (treino do programa x atividade livre)
