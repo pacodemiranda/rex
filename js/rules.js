@@ -20,12 +20,13 @@ export const labels = arr => (arr || []).map(label);
 
 // Plano da semana: congelado na primeira vez em que a semana é vista
 export function weekPlan(mon) {
-  const w = getRec('week', mon);
-  if (w) return planOf(w.data.plan);
-  const rt = routine();
+  const w = getRec('week', mon), rt = routine(), cr = profile()?.criado;
+  if (w) {
+    const plan = planOf(w.data.plan); // dias antes de começar no app mostram a rotina (só não contam)
+    if (cr && rt) { const base = planOf(rt.plan); for (let i = 0; i < 7; i++) if (addDays(mon, i) < cr && !plan[i].length) plan[i] = base[i]; }
+    return plan;
+  }
   const plan = planOf(rt?.plan);
-  const cr = profile()?.criado; // dias antes de começar no app não contam
-  if (cr) for (let i = 0; i < 7; i++) if (addDays(mon, i) < cr) plan[i] = [];
   if (rt && mon <= monday(today())) put('week', mon, { plan });
   return plan;
 }
@@ -33,9 +34,10 @@ export function weekPlan(mon) {
 export function checkinsOn(date) { return list('checkin').filter(r => r.data.date === date).map(r => r.data).sort((a, b) => (a.at || '').localeCompare(b.at || '')); }
 export const validCount = date => checkinsOn(date).filter(c => c.minutes >= MIN_VALIDO).length;
 
-// Estado de cada dia: done, bonus, absent, rest, today, resttoday, future, restf
+// Estado de cada dia: pre, done, bonus, absent, rest, today, resttoday, future, restf
 export function dayState(date, plan) {
-  const t = today(), has = plan.length > 0, valid = validCount(date) > 0;
+  const t = today(), has = plan.length > 0, valid = validCount(date) > 0, cr = profile()?.criado;
+  if (cr && date < cr && !valid) return 'pre'; // antes de começar no app
   if (date > t) return has ? 'future' : 'restf';
   if (date === t) return has ? (valid ? 'done' : 'today') : (valid ? 'bonus' : 'resttoday');
   return has ? (valid ? 'done' : 'absent') : (valid ? 'bonus' : 'rest');
@@ -48,7 +50,7 @@ export function weekSummary(mon) {
     const date = addDays(mon, i), p = plan[i] || [];
     days.push({ i, date, plan: p, state: dayState(date, p), checks: checkinsOn(date) });
   }
-  const meta = days.filter(d => d.plan.length).length;
+  const meta = days.filter(d => d.plan.length && d.state !== 'pre').length;
   const active = days.filter(d => d.checks.some(c => c.minutes >= MIN_VALIDO)).length;
   return { mon, days, meta, active, closed: addDays(mon, 6) < today() };
 }

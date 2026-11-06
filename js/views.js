@@ -57,9 +57,7 @@ A.finishOnb = () => {
   const t = today(), p = R.profile() || {};
   put('profile', 'me', { ...p, nome: (ob.nome || 'Rex').trim() || 'Rex', criado: p.criado || t });
   put('routine', 'current', { plan: ob.plan, since: t });
-  const mon = monday(t), wp = JSON.parse(JSON.stringify(ob.plan)); // refaz a semana atual (pode haver resto de conta antiga)
-  for (let i = 0; i < 7; i++) if (addDays(mon, i) < (p.criado || t)) wp[i] = [];
-  put('week', mon, { plan: wp });
+  put('week', monday(t), { plan: JSON.parse(JSON.stringify(ob.plan)) }); // refaz a semana atual (pode haver resto de conta antiga)
   put('cycle', 'current', { n: 1, start: monday(t), duration: 8, objetivo: (p.objetivos && p.objetivos[0]) || 'Criar constância' });
   ob.planInit = false; nav.go('#/jornada');
 };
@@ -99,6 +97,7 @@ export function layoutJourney() {
     else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 30, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
     else if (st === 'absent') inner = ic('minus', '#6B6272', 28);
     else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 30, 2.6);
+    else if (st === 'pre') inner = ic(dd.plan.length ? 'dumb' : 'moon', '#B8B0BE', 28, 2.6);
     else if (st === 'future') inner = ic('dumb', '#9A92A0', 30, 2.6);
     if (isT) yToday = y;
     const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
@@ -137,11 +136,11 @@ A.diaOpen = el => {
       ${ws.map(w => `<div class="card soft"><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''} · ${w.exercises.length} exercícios</p><p class="small">${esc(w.exercises.slice(0, 3).map(e => pg.exercises[e.ex]?.name || e.ex).join(', '))}${w.exercises.length > 3 ? '...' : ''}</p><button class="btn" data-act="wkStart" data-id="${esc(w.id)}">${wk && wk.id === w.id && wk.date === date ? 'CONTINUAR TREINO' : 'INICIAR TREINO'}</button></div>`).join('')}
       ${outras.map(o => `<button class="btn${ws.length ? '2' : ''}" data-act="goCheck" data-d="${date}" data-sel="${esc(o)}">REGISTRAR ${esc(o.toUpperCase())}</button>`).join('')}
       ${!plan.length ? '<p class="mut">Hoje é descanso planejado. Se você se mexer, vira bônus.</p>' : ''}
-      <button class="${plan.length ? 'link' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'Fazer outra atividade' : 'REGISTRAR UMA ATIVIDADE'}</button><button class="link" data-act="mudaRotina">Mudar a rotina</button>`);
+      <button class="${plan.length ? 'btn2' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'FAZER OUTRA ATIVIDADE' : 'REGISTRAR UMA ATIVIDADE'}</button><button class="link" data-act="mudaRotina">Mudar a rotina</button>`);
   } else if (date === addDays(t, -1) && !R.validCount(date)) {
     ui.sheet = () => sheet(`<h2>Ontem · ${fmtData(date)}</h2><p class="mut">Sem registro. Esqueceu? Dá para registrar até o fim de hoje.</p><button class="btn" data-act="goCheck" data-d="${date}" data-free="1">REGISTRAR ONTEM</button><button class="link" data-act="sheetClose">Fechar</button>`);
   } else {
-    ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? '<p class="small mut">Sem registro nesse dia.</p>' : ''}${date > t ? '<button class="btn" data-act="mudaRotina">MUDAR A ROTINA</button>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
+    ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? `<p class="small mut">${(R.profile()?.criado || '') > date ? 'Dia anterior ao seu começo no app. Não conta na meta.' : 'Sem registro nesse dia.'}</p>` : ''}${date > t ? '<button class="btn" data-act="mudaRotina">MUDAR A ROTINA</button>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
   }
 };
 A.tabMedal = () => { if (!location.hash || location.hash === '#/jornada' || location.hash === '#/') A.diaOpen({ dataset: { d: today() } }); };
