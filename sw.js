@@ -1,6 +1,6 @@
-const VERSION = 'rex-0.6.0';
+const VERSION = 'rex-0.6.1';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'css/app.css', 'js/app.js', 'js/views.js', 'js/rules.js', 'js/store.js', 'js/ui.js', 'js/util.js', 'js/config.js', 'js/state.js', 'js/onboarding.js', 'js/program.js', 'js/path.js', 'js/treino.js',
-  'assets/rex/base.png', 'assets/rex/determinado.png', 'assets/rex/empolgado.png', 'assets/rex/cansado.png', 'assets/rex/orgulhoso.png', 'assets/cenario/a.jpg', 'assets/cenario/b.jpg', 'assets/icon-192.png'];
+  'assets/rex/base.png', 'assets/rex/determinado.png', 'assets/rex/empolgado.png', 'assets/rex/cansado.png', 'assets/rex/orgulhoso.png', 'assets/cenario/trilha.jpg', 'assets/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

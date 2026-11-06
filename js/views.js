@@ -76,10 +76,10 @@ export function layoutJourney() {
   const win = document.getElementById('jwin'); if (!win || !jdata) return;
   const { s, cen } = jdata, cw = win.clientWidth, wh = win.clientHeight;
   const sc = Math.max(cw / 390, wh / 823) * 1.15, W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 66, msz = 88, L = CUM[CUM.length - 1];
-  let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
+  let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
   let yToday = H * .7;
   s.days.forEach((dd, i) => {
-    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc - 20, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
+    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
     const names = R.labels(dd.plan).join(' + ');
     const pend = st === 'today' || st === 'resttoday';
     let inner = '';
