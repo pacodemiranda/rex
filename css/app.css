@@ -154,3 +154,9 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .tabbar .mbtn{position:absolute;left:50%;top:-40px;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;background:var(--amb);border:5px solid #fff;box-shadow:0 5px 0 var(--ambsh),0 10px 22px rgba(31,10,43,.28);display:flex;align-items:center;justify-content:center;animation:mpulse 1.8s ease-in-out infinite}
 .tabbar .mbtn.ok{background:var(--grn);box-shadow:0 5px 0 var(--grnsh),0 10px 22px rgba(31,10,43,.28);animation:none}
 @keyframes mpulse{50%{transform:translateX(-50%) scale(1.07)}}
+
+.tabbar{align-items:center;min-height:70px}
+.tabbar a.mid{padding:0;display:flex;align-items:center;justify-content:center}
+.tabbar .mbtn{position:static;transform:none;width:60px;height:60px;border-width:4px;box-shadow:0 4px 0 var(--ambsh),0 6px 14px rgba(31,10,43,.22)}
+.tabbar .mbtn.ok{box-shadow:0 4px 0 var(--grnsh),0 6px 14px rgba(31,10,43,.22)}
+@keyframes mpulse{50%{transform:scale(1.08)}}

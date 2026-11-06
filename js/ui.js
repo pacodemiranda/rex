@@ -22,7 +22,7 @@ export const TABS = [
 export const tabbar = active => {
   const feito = validCount(today()) > 0;
   return `<nav class="tabbar">${TABS.map(([id, t, p]) => id === 'jornada'
-    ? `<a href="#/jornada" data-act="tabMedal" class="mid ${id === active ? 'on' : ''}" aria-label="Jornada e check-in de hoje"><span class="mbtn ${feito ? 'ok' : ''}">${feito ? ic('check', '#fff', 34, 4) : ic('star', '#fff', 34, 2)}</span>${t}</a>`
+    ? `<a href="#/jornada" data-act="tabMedal" class="mid ${id === active ? 'on' : ''}" aria-label="Jornada e check-in de hoje"><span class="mbtn ${feito ? 'ok' : ''}">${feito ? ic('check', '#fff', 34, 4) : ic('star', '#fff', 34, 2)}</span></a>`
     : `<a href="#/${id}" class="${id === active ? 'on' : ''}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>${t}</a>`).join('')}</nav>`;
 };
 export const topbar = (title, back, sub) => `<header class="topbar"><a class="icobtn" href="${back}" aria-label="Voltar">${ic('back')}</a><div class="tb-title">${sub ? `<div class="sub">${esc(sub)}</div>` : ''}<div>${esc(title)}</div></div><div style="width:44px"></div></header>`;
