@@ -114,3 +114,8 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:84px;border-radius:16px;border:2px dashed #D9D4CC;background:#fff}
 .slot.me{border:2px solid var(--grn);background:#EAF8EE}.slot small{font-size:11px;font-weight:800;color:var(--mut)}
 .link-row small{display:block;font-size:12px;font-weight:700;color:var(--mut)}
+.hint{position:absolute;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;font-weight:800;padding:5px 10px;border-radius:12px;white-space:nowrap;pointer-events:none;animation:bob 1.4s ease-in-out infinite}
+.hint:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top-color:var(--ink)}
+.medal-btn .halo{animation:pulse 1.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-4px)}}@keyframes pulse{50%{transform:scale(1.12);opacity:.6}}
+.nlab em{display:block;font-style:normal;font-size:12px;font-weight:800;color:var(--red);margin-top:1px}

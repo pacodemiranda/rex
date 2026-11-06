@@ -88,7 +88,7 @@ export function layoutJourney() {
   const sc = Math.max(cw / 390, wh / 823), W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, top = wh - H;
   const cta = document.querySelector('.cta'), wr = win.getBoundingClientRect();
   const ctaTop = cta ? cta.getBoundingClientRect().top - wr.top : wh - 190;
-  const base = ctaTop - 62, topM = 40, d = Math.min(75, Math.max(36, (base - topM) / 6)), size = Math.min(52, d * .8), msz = Math.min(84, d * 1.15);
+  const base = ctaTop - 62, topM = 66, d = Math.min(75, Math.max(36, (base - topM) / 6)), size = Math.min(52, d * .8), msz = Math.min(84, d * 1.15);
   let h = `<img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:${top}px;width:${W}px;height:${H}px">`;
   s.days.forEach((dd, i) => {
     const y = base - i * d, x = left + pathX((y - top) / sc) * sc, st = dd.state, onLeft = x < cw / 2;
@@ -100,15 +100,18 @@ export function layoutJourney() {
     else if (st === 'rest' || st === 'resttoday' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 24, 2.6);
     else if (st === 'future') inner = ic('dumb', '#9A92A0', 24, 2.6);
     if (st === 'resttoday') sub += ' · HOJE';
-    if (st === 'today') {
-      const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16;
-      h += `<button class="medal-btn" data-act="goCheck" data-d="${dd.date}" aria-label="Registrar ${esc(names)}" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}</button>`;
-      sub += ' · HOJE';
-      const rl = Math.max(2, Math.min(cw - 76, onLeft ? x - 128 : x + 56));
-      h += `<img class="rex" src="assets/rex/determinado.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 62}px;width:74px;height:88px">`;
+    const isT = dd.date === today(), pend = st === 'today' || st === 'resttoday';
+    if (pend) {
+      const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16, fr = st === 'resttoday' ? ' data-free="1"' : '';
+      h += `<button class="medal-btn" data-act="goCheck" data-d="${dd.date}"${fr} aria-label="Registrar atividade de hoje" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}</button>`;
+      sub += st === 'resttoday' ? '' : ' · HOJE'; lab = st === 'resttoday' ? 'Descanso · bônus se treinar' : lab;
     } else h += `<div class="node ${st}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</div>`;
-    const off = (st === 'today' ? msz / 2 : size / 2) + 10, pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
-    h += `<div class="nlab ${st === 'today' ? 'today' : st === 'done' ? 'done' : ''}" style="${pos};top:${y - 20}px;text-align:${onLeft ? 'left' : 'right'}"><small>${sub}</small><b>${esc(lab)}</b></div>`;
+    if (isT) {
+      const rl = Math.max(2, Math.min(cw - 76, onLeft ? x - 128 : x + 60));
+      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 62}px;width:74px;height:88px;pointer-events:none">`;
+    }
+    const off = (pend ? msz / 2 + 8 : size / 2) + 10, pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
+    h += `<div class="nlab ${pend ? 'today' : st === 'done' ? 'done' : ''}" style="${pos};top:${y - 20}px;text-align:${onLeft ? 'left' : 'right'}"><small>${sub}</small><b>${esc(lab)}</b>${pend ? '<em>Toque na medalha</em>' : ''}</div>`;
   });
   win.innerHTML = h;
 }
