@@ -5,7 +5,7 @@ import * as O from './onboarding.js';
 import * as T from './treino.js';
 import { nav, setBind } from './state.js';
 
-export const APP_VERSION = '0.3.1';
+export const APP_VERSION = '0.4.0';
 V.ui.version = APP_VERSION;
 const root = document.getElementById('app');
 const ROUTES = { bemvindo: O.bemvindo, login: O.login, diag1: () => O.diag(1), diag2: () => O.diag(2), diag3: () => O.diag(3), diag4: () => O.diag(4), diag5: () => O.diag(5), prog: O.progEscolha, progcolar: O.progColar, programa: O.programa, treino: T.treino, onb2: V.onb2, onb3: V.onb3, jornada: V.jornada, checkin: V.checkin, armario: V.armario, evolucao: V.evolucao, grupo: V.grupo, perfil: V.perfil, editar: V.editar };

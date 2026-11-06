@@ -147,3 +147,4 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .dlab.now{font-size:15px;font-weight:900;color:var(--ink);background:#fff;border:2px solid var(--red);box-shadow:0 3px 10px rgba(31,10,43,.18)}
 .dlab.now b{color:var(--red)}
 .node .star{top:-6px;right:-8px}
+.hoje{white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis;bottom:-6px;pointer-events:none}

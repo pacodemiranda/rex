@@ -1,5 +1,5 @@
 import { esc, today } from './util.js';
-import { ic, rex, bubble, chip, banner, sheet, topbar } from './ui.js';
+import { ic, rex, bubble, chip, banner, sheet, topbar, tabbar } from './ui.js';
 import { put, list } from './store.js';
 import * as R from './rules.js';
 import { ui, ob, A, nav, loadDiag, num } from './state.js';
@@ -126,7 +126,7 @@ A.pedirPro = () => {
 // ---------- colar programa ----------
 export function progColar() {
   const v = ui.val, onb = R.isOnboarded();
-  return { html: screen(`${topbar('Colar programa', onb ? '#/perfil' : '#/prog')}<div class="scroll">
+  return { html: screen(`${topbar('Colar programa', onb ? '#/programa' : '#/prog')}<div class="scroll">
     <p class="mut">Cole aqui o programa no formato JSON que o profissional (ou o Claude) te enviou.</p>
     <textarea class="field code" data-bind="ui.texto" placeholder='{ "name": "...", "workouts": [ ... ] }'>${esc(ui.texto)}</textarea>
     <button class="btn2" data-act="colarClip">COLAR DA ÁREA DE TRANSFERÊNCIA</button>
@@ -147,14 +147,14 @@ A.importar = () => {
 // ---------- construir/ver programa ----------
 export function programa() {
   const p = R.program() || P.programaVazio(), onb = R.isOnboarded();
-  return { html: screen(`${topbar('Meu programa', onb ? '#/perfil' : '#/prog')}<div class="scroll">
+  return { html: screen(`${onb ? '' : topbar('Meu programa', '#/prog')}<div class="scroll">${onb ? '<h1 style="padding-top:14px">Meu programa</h1>' : ''}
     ${R.pedido() && !R.program() ? banner('Seu pedido ao profissional está em andamento. Quando o programa chegar, é só colar aqui.', 'amb') : ''}
     ${p.workouts.length ? p.workouts.map(w => `<div class="card"><div class="row2"><div><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''}</p></div><button class="icobtn sm" data-act="rmTreino" data-id="${esc(w.id)}" aria-label="Remover treino">${ic('close', '#6B6272', 16)}</button></div>
       ${w.exercises.map(e => `<div class="exrow"><span>${esc(p.exercises[e.ex]?.name || e.ex)}</span><b>${e.sets}x ${esc(e.mode === 'time' ? e.seconds + 's' : e.reps)}</b></div>`).join('') || '<p class="small mut">Sem exercícios ainda.</p>'}
       <button class="btn2" data-act="novoEx" data-id="${esc(w.id)}">+ EXERCÍCIO</button></div>`).join('') : banner('Nenhum treino ainda. Crie o primeiro abaixo ou cole um programa pronto.', 'gray')}
     <button class="btn2" data-act="novoTreino">+ NOVO TREINO</button>
     <button class="link" data-act="go" data-to="#/progcolar">Colar um programa pronto${p.workouts.length ? ' (substitui o atual)' : ''}</button>
-  </div>${!onb ? `<div class="foot"><button class="btn" data-act="progFim" ${p.workouts.length ? '' : 'disabled'}>CONTINUAR</button></div>` : ''}${sheetHtml()}`) };
+  </div>${!onb ? `<div class="foot"><button class="btn" data-act="progFim" ${p.workouts.length ? '' : 'disabled'}>CONTINUAR</button></div>` : tabbar('programa')}${sheetHtml()}`) };
 }
 const salvaProg = p => put('program', 'current', { ...p, source: p.source || 'manual' });
 A.novoTreino = () => {

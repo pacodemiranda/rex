@@ -13,9 +13,9 @@ export const chip = (t, on, attrs = '') => `<button class="chip${on ? ' on' : ''
 export const medal = (sz = 84, num) => `<div class="medal" style="width:${sz}px;height:${sz}px"><div class="medal-in" style="width:${sz * .8}px;height:${sz * .8}px"><svg width="${sz * .44}" height="${sz * .44}" viewBox="0 0 24 24" fill="#FFF8E7">${P.star.replace(' fill="currentColor"', '')}</svg></div>${num ? `<div class="medal-n">${num}</div>` : ''}</div>`;
 export const TABS = [
   ['jornada', 'Jornada', '<circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/><path d="M7 8.5c0 6 10 3 10 7"/>'],
-  ['evolucao', 'Evolução', '<path d="M5 20V11M12 20V5M19 20v-7"/>'],
   ['grupo', 'Grupo', '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 1.5 6 5"/>'],
-  ['armario', 'Armário', '<path d="M8 4h8l3 4-3 2v10H8V10L5 8z"/>'],
+  ['editar', 'Rotina', '<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>'],
+  ['programa', 'Programa', '<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>'],
   ['perfil', 'Perfil', '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/>']
 ];
 export const tabbar = active => `<nav class="tabbar">${TABS.map(([id, t, p]) => `<a href="#/${id}" class="${id === active ? 'on' : ''}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>${t}</a>`).join('')}</nav>`;

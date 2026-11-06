@@ -23,13 +23,14 @@ export function onb2() {
   if (!edit && !ob.planInit) { const pg = R.program(); ob.plan = pg?.schedule ? P.planoDoSchedule(pg) : R.emptyPlan(); ob.planInit = true; }
   const n = Object.values(ob.plan).filter(a => a.length).length, pg = R.program();
   const sug = pg?.schedule ? 'Já deixei a rotina sugerida pelo seu programa. Ajuste como preferir.' : 'Toque no + para escolher o que fazer em cada dia.';
-  return { html: screen(`${edit ? topbar('Minha rotina', '#/perfil') : `<div class="progress"><div class="bar"><i style="width:${7 * 100 / 8}%"></i></div><span>7 de 8</span></div>`}<div class="scroll">
-    ${edit ? '' : '<h1>Organize a sua semana</h1>'}
+  return { html: screen(`${edit ? '' : `<div class="progress"><div class="bar"><i style="width:${7 * 100 / 8}%"></i></div><span>7 de 8</span></div>`}<div class="scroll">
+    ${edit ? '<h1 style="padding-top:14px">Minha rotina</h1>' : '<h1>Organize a sua semana</h1>'}
     <p class="mut">${sug} Toque numa atividade para remover. Mais de uma no mesmo dia vira um número na medalha.</p>
     ${!pg && R.pedido() ? banner('Seu treino chega em até 24h. Por ora, marque os dias em que pretende se mexer. Depois você encaixa os treinos.', 'amb') : ''}
     <div style="display:flex;flex-direction:column;gap:8px">${weekRows(edit ? dow(today()) : -1)}</div>
     <div class="card"><h2>Meta da semana: ${n} ${n === 1 ? 'dia' : 'dias'} com atividade</h2><p class="small mut">A semana (etapa) fecha quando você chega nessa meta.</p></div>
-  </div><div class="foot"><button class="btn" data-act="${edit ? 'saveRoutine' : 'go'}" data-to="#/onb3" ${n ? '' : 'disabled'}>${edit ? 'SALVAR' : 'CONTINUAR'}</button>${edit ? '' : '<button class="link" data-act="go" data-to="#/prog">Voltar</button>'}</div>${sheetHtml()}`) };
+    ${edit ? `<button class="btn" data-act="saveRoutine" ${n ? '' : 'disabled'}>SALVAR ROTINA</button>` : ''}
+  </div>${edit ? tabbar('editar') : `<div class="foot"><button class="btn" data-act="go" data-to="#/onb3" ${n ? '' : 'disabled'}>CONTINUAR</button><button class="link" data-act="go" data-to="#/prog">Voltar</button></div>`}${sheetHtml()}`) };
 }
 A.rmAct = el => { ob.plan[+el.dataset.d].splice(+el.dataset.i, 1); };
 A.addAct = el => {
@@ -102,17 +103,21 @@ export function layoutJourney() {
     if (isT) yToday = y;
     const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
     if (isT) { // Rex antes da medalha, para a medalha ficar por cima
-      const rl = Math.max(0, Math.min(cw - 74, onLeft ? x - msz / 2 - 74 : x + msz / 2 + 2));
+      const rl = Math.max(0, x - msz / 2 - 66);
       h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 50}px;width:74px;height:88px;pointer-events:none">`;
     }
+    const fb = pend && (cw - (x + msz / 2 + 10) - 8) < 120; // sem espaço ao lado
     if (pend) {
       const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16;
-      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}<span class="hoje">HOJE</span></button>`;
+      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}<span class="hoje">${fb ? 'HOJE · ' + esc(txt) : 'HOJE'}</span></button>`;
     } else {
       h += `<button class="node ${st}" data-act="diaOpen" data-d="${dd.date}" aria-label="${DIAS_LONGO[i]}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</button>`;
     }
-    const off = (pend ? msz / 2 + 10 : size / 2 + 8), pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
-    h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - (isT ? 15 : 13)}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
+    const off = (pend ? msz / 2 + 10 : size / 2 + 8), room = cw - (x + off) - 8;
+    if (!fb) {
+      const pos = (pend || onLeft) ? `left:${x + off}px;max-width:${Math.min(room, 190)}px` : `right:${cw - x + off}px`;
+      h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - (isT ? 15 : 13)}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
+    }
   });
   win.innerHTML = h + '</div>';
   const max = H - wh; if (jScroll == null) jScroll = Math.max(0, Math.min(max, yToday - wh * .58));
@@ -186,26 +191,26 @@ A.ckFinish = () => { ck.done = null; nav.go('#/jornada'); };
 // ---------- armário ----------
 export function armario() {
   const t = R.totais(), c = R.cycleInfo(), falta = c ? Math.max(0, c.duration - c.etapas) : 0;
-  return { html: screen(`<div class="scroll"><h1>Armário do ${esc(rexNome())}</h1>
+  return { html: screen(`${topbar('Armário', '#/perfil')}<div class="scroll"><h1 style="font-size:22px">Armário do ${esc(rexNome())}</h1>
     <div style="display:flex;justify-content:center;background:var(--mint);border-radius:24px;padding:14px">${rex('base', 140)}</div>
     <div style="display:flex;gap:10px"><div style="flex:1;background:var(--pur);color:#fff;border-radius:16px;padding:12px 14px"><div class="small" style="letter-spacing:.06em">PLACAR</div><div style="font-size:24px;font-weight:900">${t.pts.toLocaleString('pt-BR')} pts</div></div>
       <div style="flex:1;background:var(--amb);border-radius:16px;padding:12px 14px"><div class="small" style="letter-spacing:.06em">MOEDAS</div><div style="font-size:24px;font-weight:900">${t.coins}</div></div></div>
     <div class="lab">CONQUISTAS DE CICLO</div>
     <div class="card soft" style="flex-direction:row;align-items:center;gap:14px;border-style:dashed"><div style="width:56px;height:56px;border-radius:28px;background:var(--line);display:flex;align-items:center;justify-content:center">${ic('lock', '#6B6272', 26, 2.5)}</div><div><h2>Medalha do Ciclo ${c ? c.n : 1}</h2><p class="small mut">Cumpra as etapas e leve para o armário. Faltam ${falta}.</p></div></div>
     <div class="lab">ACESSÓRIOS</div>${banner('Em breve: gaste suas moedas em acessórios para o ' + esc(rexNome()) + '.', 'gray')}
-  </div>${tabbar('armario')}`) };
+  </div>${tabbar('perfil')}`) };
 }
 
 // ---------- evolução (histórico) ----------
 export function evolucao() {
   const cs = list('checkin').map(r => r.data).sort((a, b) => (b.date + b.at).localeCompare(a.date + a.at));
   const dias = new Set(cs.filter(c => c.minutes >= R.MIN_VALIDO).map(c => c.date)).size, t = R.totais();
-  return { html: screen(`<div class="scroll"><h1>Evolução</h1>
+  return { html: screen(`${topbar('Evolução', '#/perfil')}<div class="scroll">
     <div class="stat"><div><b>${dias}</b><span>DIAS ATIVOS</span></div><div><b>${cs.length}</b><span>CHECK-INS</span></div><div><b>${t.pts}</b><span>PONTOS</span></div><div><b>${Math.round(cs.reduce((a, c) => a + c.minutes, 0) / 60 * 10) / 10} h</b><span>EM MOVIMENTO</span></div></div>
     <div class="lab">HISTÓRICO</div>
     ${cs.length ? `<div class="hist">${cs.slice(0, 40).map(c => `<div class="hrow"><div class="t"><b>${esc((c.names || c.acts).join(' + '))}</b><small>${fmtData(c.date)} · ${c.minutes} min</small></div><div class="v">${c.pts ? '+' + c.pts : '0'} pts</div></div>`).join('')}</div>` : banner('Seus check-ins aparecem aqui. Faça o primeiro na Jornada.', 'gray')}
     ${banner('Em breve: gráficos de carga, calendário do mês e relatório do ciclo.', 'gray')}
-  </div>${tabbar('evolucao')}`) };
+  </div>${tabbar('perfil')}`) };
 }
 export function grupo() {
   const url = location.origin + location.pathname;
@@ -236,9 +241,9 @@ export function perfil() {
   const row = (href, icon, t, sub) => `<a class="link-row" href="${href}">${ic(icon)}<span>${t}${sub ? `<small>${esc(sub)}</small>` : ''}</span>${ic('chev', '#6B6272', 18)}</a>`;
   return { html: screen(`<div class="scroll"><div style="display:flex;align-items:center;gap:14px;padding-top:6px"><div style="width:72px;height:72px;border-radius:36px;background:#EEF6EA;display:flex;align-items:center;justify-content:center">${rex('base', 56)}</div><div><h1 style="font-size:22px">${esc(p?.nome || 'Rex')}</h1><p class="small mut">${esc(s?.user?.email || '')}</p></div></div>
     <div class="card"><div class="row2"><div><div class="lab">PESO ATUAL</div><div style="font-size:26px;font-weight:900">${peso ? String(peso).replace('.', ',') + ' kg' : '-'}</div>${p?.metaPeso ? `<p class="small mut">Meta: ${String(p.metaPeso).replace('.', ',')} kg</p>` : ''}</div><button class="btn2" style="width:auto;padding:12px 16px" data-act="pesoSheet">ATUALIZAR</button></div></div>
+    ${row('#/evolucao', 'star', 'Evolução', 'Histórico de check-ins e pontos')}
+    ${row('#/armario', 'lock', 'Armário', 'Medalhas e acessórios do ' + rexNome())}
     ${row('#/diag1', 'warn', 'Meu diagnóstico', 'Revise objetivos, saúde e preferências')}
-    ${row('#/programa', 'dumb', 'Meu programa', pg ? `${pg.name} · ${pg.workouts.length} treinos` : (R.pedido() ? 'Pedido ao profissional em andamento' : 'Nenhum programa'))}
-    ${row('#/editar', 'cal', 'Minha rotina')}
     <div class="card soft"><p class="small">${msg}</p><button class="btn2" data-act="syncNow">SINCRONIZAR AGORA</button></div>
     <button class="btn2" data-act="logout">SAIR DA CONTA</button>
     <p class="small mut" style="text-align:center">Rex versão ${ui.version}</p>
