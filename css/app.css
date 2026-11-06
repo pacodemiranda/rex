@@ -186,4 +186,4 @@ button.link-row{width:100%;text-align:left;font-family:inherit;color:inherit;cur
 .hoje-btn{position:absolute;right:16px;bottom:calc(98px + env(safe-area-inset-bottom));z-index:13;background:var(--ink);color:#fff;border:0;border-radius:18px;padding:9px 16px;font:900 14px Nunito,sans-serif;box-shadow:0 6px 16px rgba(31,10,43,.3);opacity:0;pointer-events:none;transition:opacity .2s}
 .hoje-btn.show{opacity:1;pointer-events:auto}
 .seam{position:absolute;left:0;right:0;height:90px;transform:translateY(-50%);background:linear-gradient(rgba(176,219,106,0),rgba(176,219,106,.85) 50%,rgba(176,219,106,0));pointer-events:none;z-index:1}
-.seam{height:6px!important;background:#fff!important;border-radius:3px;box-shadow:0 2px 8px rgba(31,10,43,.28);opacity:.95;transform:translateY(-50%)!important}
+.seam{display:none!important}

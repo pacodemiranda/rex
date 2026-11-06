@@ -67,24 +67,24 @@ export function jornada() {
 }
 // Linha do tempo infinita: cada semana é um "tile" do cenário (alternando espelhado para emendar o caminho).
 // O dia de hoje fica sempre numa posição fixa da tela (ao carregar/voltar), com o Rex ao lado.
-const SLOT = 823 / 7, SHIFT = 15;
+const IMGH = 766, SLOT = IMGH / 7;
 function xAt(imgY, flip) {
   const last = PATH[PATH.length - 1][0], y = Math.max(0, Math.min(last, imgY));
   let x = PATH[PATH.length - 1][1];
   for (let k = 1; k < PATH.length; k++) if (PATH[k][0] >= y) { const [y0, x0] = PATH[k - 1], [y1, x1] = PATH[k]; x = y1 === y0 ? x1 : x0 + (x1 - x0) * (y - y0) / (y1 - y0); break; }
-  return flip ? 390 - x + SHIFT : x;
+  return x;
 }
 const fmtDM = d => { const [, m, dd] = d.split('-'); return `${+dd}/${+m}`; };
 export function layoutJourney() {
   const win = document.getElementById('jwin'); if (!win || !jdata) return;
   const cw = win.clientWidth, wh = win.clientHeight, t = today(), curMon = monday(t), cr = R.profile()?.criado, c = R.cycleInfo();
-  const sc = Math.max(cw / 390, wh / 823) * 1.15, W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 66, msz = 88;
+  const sc = Math.max(cw / 390, wh / IMGH) * 1.15, W = 390 * sc, H = IMGH * sc, left = (cw - W) / 2, size = 66, msz = 88;
   const past = Math.max(0, Math.min(3, cr ? Math.round((new Date(curMon) - new Date(monday(cr))) / (7 * 864e5)) : 0)), FUT = 2;
   const nW = FUT + past + 1;
   let imgs = '', ribs = '', nodes = '', labs = '', rexH = '', yToday = 0;
   for (let i = 0; i < nW; i++) {
-    const off = FUT - i, mon = addDays(curMon, off * 7), flip = i % 2 === 1, s = off === 0 ? jdata.s : R.weekSummary(mon);
-    imgs += `<img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left + (flip ? SHIFT * sc : 0)}px;top:${i * H}px;width:${W}px;height:${H}px;${flip ? 'transform:scaleX(-1);' : ''}">`;
+    const off = FUT - i, mon = addDays(curMon, off * 7), flip = false, s = off === 0 ? jdata.s : R.weekSummary(mon);
+    imgs += `<img class="bg" src="assets/cenario/trilha.jpg" alt="" style="left:${left}px;top:${i * H}px;width:${W}px;height:${H}px;">`;
     if (i > 0) { // faixa da semana na emenda entre os tiles
       const n = c ? c.semana + off + 1 : 0, x = cw / 2, txt = n >= 1 && n <= (c?.duration || 8) ? 'SEMANA ' + n : 'SEMANA DE ' + fmtDM(addDays(mon, 7));
       ribs += `<div class="seam" style="top:${i * H}px"></div><div class="rib" style="left:${x}px;top:${i * H}px"><span>${txt}</span></div>`;
