@@ -115,12 +115,12 @@ export function layoutJourney() {
   if (jScroll == null) jScroll = target;
   win.scrollTop = jScroll;
   const btn = document.getElementById('hojebtn');
-  const upd = () => { jScroll = win.scrollTop; if (btn) { const d = win.scrollTop - target; btn.classList.toggle('show', Math.abs(d) > 170); btn.textContent = d > 0 ? '↓ Hoje' : '↑ Hoje'; } };
+  const upd = () => { jScroll = win.scrollTop; if (btn) { const d = win.scrollTop - target; btn.classList.toggle('show', Math.abs(d) > 170); btn.textContent = d > 0 ? '↓ Voltar para hoje' : '↑ Voltar para hoje'; } };
   upd(); win.addEventListener('scroll', upd, { passive: true });
   jTarget = target;
 }
 let jTarget = 0;
-A.irHoje = () => { jScroll = jTarget; };
+A.irHoje = () => { const w = document.getElementById('jwin'); jScroll = jTarget; if (w) w.scrollTo({ top: jTarget, behavior: 'smooth' }); };
 addEventListener('resize', layoutJourney);
 
 // toque num dia: popup com a ação certa (treino do programa x atividade livre)
