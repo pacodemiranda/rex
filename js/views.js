@@ -115,7 +115,7 @@ export function layoutJourney() {
   if (jScroll == null) jScroll = target;
   win.scrollTop = jScroll;
   const btn = document.getElementById('hojebtn');
-  const upd = () => { jScroll = win.scrollTop; if (btn) { const d = win.scrollTop - target; btn.classList.toggle('show', Math.abs(d) > 170); btn.textContent = d > 0 ? '↓ Voltar para hoje' : '↑ Voltar para hoje'; } };
+  const upd = () => { jScroll = win.scrollTop; if (btn) { const d = win.scrollTop - target; btn.classList.toggle('show', Math.abs(d) > 170); btn.textContent = d > 0 ? '↑ Voltar para hoje' : '↓ Voltar para hoje'; } };
   upd(); win.addEventListener('scroll', upd, { passive: true });
   jTarget = target;
 }

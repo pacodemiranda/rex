@@ -188,3 +188,4 @@ button.link-row{width:100%;text-align:left;font-family:inherit;color:inherit;cur
 .seam{position:absolute;left:0;right:0;height:90px;transform:translateY(-50%);background:linear-gradient(rgba(176,219,106,0),rgba(176,219,106,.85) 50%,rgba(176,219,106,0));pointer-events:none;z-index:1}
 .seam{display:none!important}
 .hoje-btn{right:auto!important;left:50%;bottom:auto!important;top:calc(104px + env(safe-area-inset-top));transform:translateX(-50%);padding:7px 14px;font-size:13px;white-space:nowrap}
+.hoje-btn{top:calc(124px + env(safe-area-inset-top));background:rgba(255,255,255,.82)!important;color:var(--ink)!important;-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.8)!important;box-shadow:0 6px 18px rgba(31,10,43,.18)!important}
