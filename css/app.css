@@ -69,9 +69,11 @@ textarea.field{min-height:76px;resize:none;font-weight:600}
 .etp b{display:block;font-size:17px;line-height:1.1}.etp span{font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--mut)}
 .chipweek{display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 14px;font-size:14px;font-weight:800}
 .dots{display:flex;gap:6px}.dots i{width:14px;height:14px;border-radius:7px;background:var(--line)}.dots i.on{background:var(--grn)}
-#jwin{flex:1;min-height:0;position:relative;overflow:hidden;background:#CFE7A0}
+#jwin{flex:1;min-height:0;position:relative;overflow-y:auto;overflow-x:hidden;background:#CFE7A0;scrollbar-width:none;-ms-overflow-style:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#jwin::-webkit-scrollbar{display:none;width:0;height:0}
+.jin{position:relative;width:100%;overflow:hidden}
 .screen.bar .scroll{padding-bottom:110px}
-#jwin img.bg{position:absolute;display:block}
+.jin img.bg{position:absolute;display:block;max-width:none}
 .node{position:absolute;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center}
 .node.done{background:var(--grn);box-shadow:0 4px 0 var(--grnsh)}
 .node.bonus,.node.rest,.node.resttoday{background:var(--mint)}
@@ -119,3 +121,23 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .medal-btn .halo{animation:pulse 1.4s ease-in-out infinite}
 @keyframes bob{50%{transform:translate(-50%,-4px)}}@keyframes pulse{50%{transform:scale(1.12);opacity:.6}}
 .nlab em{display:block;font-style:normal;font-size:12px;font-weight:800;color:var(--red);margin-top:1px}
+
+.hdr2{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px 2px;flex:none}
+.hdr2 h1{font-size:22px}.hdr2 .eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--pur)}
+.wkline{display:flex;align-items:center;gap:10px;padding:2px 20px 8px;font-size:13px;font-weight:800;color:var(--mut);flex:none}
+.wkline .dots i{width:10px;height:10px;border-radius:5px}
+.pedido-s{display:block;margin:0 20px 8px;background:#FFF3D6;border:2px solid var(--amb);border-radius:12px;padding:6px 12px;font-size:12px;font-weight:700}.pedido-s b{color:var(--pur)}
+.node{padding:0;cursor:pointer}
+.tlab{position:absolute;transform:translateX(-50%);background:#fff;border-radius:14px;padding:5px 12px 6px;text-align:center;box-shadow:0 3px 10px rgba(31,10,43,.18);white-space:nowrap}
+.tlab small{display:block;font-size:10px;font-weight:900;letter-spacing:.07em;color:var(--red)}.tlab b{display:block;font-size:15px;font-weight:900}.tlab em{display:block;font-style:normal;font-size:11px;font-weight:800;color:var(--mut)}
+.dlab{position:absolute;background:rgba(255,255,255,.88);border-radius:10px;padding:3px 9px;font-size:12px;font-weight:700;color:var(--mut);white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.dlab b{font-weight:900;color:var(--ink);letter-spacing:.03em;text-transform:uppercase}
+.wkt{width:56px;text-align:right;font-size:15px;font-weight:900;color:var(--pur)}
+.sethead,.setrow{display:grid;grid-template-columns:28px 1fr 1fr 48px;gap:8px;align-items:center}
+.sethead span{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--mut);text-align:center}
+.sn{font-weight:900;color:var(--mut);text-align:center}
+.field.sm{min-height:42px;padding:8px;text-align:center;font-size:16px}
+.setchk{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+.setrow.done .setchk{background:var(--grn);border-color:var(--grn)}.setrow.done .field{background:#EAF8EE}
+.restbar{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;background:var(--ink);color:#fff;border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;box-shadow:0 8px 24px rgba(31,10,43,.3)}
+.restbar b{font-size:20px;margin-left:6px}.restbar button{background:#fff;color:var(--ink);border:0;border-radius:12px;padding:8px 14px;font-weight:900}

@@ -6,6 +6,7 @@ import * as P from './program.js';
 import { PATH } from './path.js';
 import { ui, ob, ck, A, nav, num } from './state.js';
 import { screen, sheetHtml, leaveDiag } from './onboarding.js';
+import { getWk } from './treino.js';
 export { ui, ob, ck, A, leaveDiag };
 
 const rexNome = () => R.profile()?.nome || 'Rex';
@@ -63,19 +64,17 @@ A.finishOnb = () => {
 };
 
 // ---------- jornada ----------
-let jdata = null;
+let jdata = null, jScroll = null;
+export const resetJ = () => { jScroll = null; };
 export function jornada() {
   const mon = monday(today()), s = R.weekSummary(mon), c = R.cycleInfo(), cen = R.cenarioDaSemana(mon, R.cycle());
   jdata = { s, cen };
-  const t = s.days.find(d => d.date === today());
-  const pend = t.state === 'today', nm = R.labels(t.plan);
   const dots = Array.from({ length: Math.min(7, Math.max(s.meta, 1)) }, (_, i) => `<i class="${i < s.active ? 'on' : ''}"></i>`).join('');
-  const cta = pend ? `<button class="btn" data-act="goCheck" data-d="${t.date}">REGISTRAR ${nm.length > 1 ? 'AS ATIVIDADES DE HOJE' : esc(nm[0]).toUpperCase()}</button><button class="link" data-act="goCheck" data-d="${t.date}" data-free="1">Registrar outra atividade</button>`
-    : `<button class="btn2" data-act="goCheck" data-d="${t.date}" data-free="1">${t.state === 'done' || t.state === 'bonus' ? 'REGISTRAR OUTRA ATIVIDADE' : 'REGISTRAR UMA ATIVIDADE'}</button><button class="link" data-act="goCheck" data-d="${addDays(today(), -1)}" data-free="1">Esqueceu ontem? Registre aqui</button>`;
-  const pedido = R.pedido() && !R.program() ? `<a class="banner amb pedido" href="#/progcolar"><span>Seu treino chega em até 24h</span><b>Já tenho o programa</b></a>` : '';
-  return { html: screen(`<div class="hdr"><div class="row"><div><div class="eyebrow">CICLO ${c.n} · ${esc((c.objetivo || '').toUpperCase())}</div><h1>Semana ${c.semana} de ${c.duration}</h1></div><div class="etp"><b>${c.etapas}/${c.duration}</b><span>ETAPAS</span></div></div>
-    <div class="chipweek"><span>${s.active} de ${s.meta} dias ativos nesta semana</span><div class="dots">${dots}</div></div>${pedido}</div>
-    <div id="jwin"></div><div class="cta">${cta}</div>${tabbar('jornada')}${sheetHtml()}`, 'jr'), after: layoutJourney };
+  const pedido = R.pedido() && !R.program() ? `<a class="pedido-s" href="#/progcolar">Treino chega em até 24h · <b>já tenho o programa</b></a>` : '';
+  return { html: screen(`<div class="hdr2"><div><div class="eyebrow">CICLO ${c.n} · ${esc((c.objetivo || '').toUpperCase())}</div><h1>Semana ${c.semana} de ${c.duration}</h1></div>
+    <div class="etp"><b>${c.etapas}/${c.duration}</b><span>ETAPAS</span></div></div>
+    <div class="wkline"><div class="dots">${dots}</div><span>${s.active} de ${s.meta} dias ativos</span></div>${pedido}
+    <div id="jwin"></div>${tabbar('jornada')}${sheetHtml()}`, 'jr'), after: layoutJourney };
 }
 function pathX(imgY) {
   const y = Math.max(PATH[0][0], Math.min(PATH[PATH.length - 1][0], imgY));
@@ -85,41 +84,65 @@ function pathX(imgY) {
 export function layoutJourney() {
   const win = document.getElementById('jwin'); if (!win || !jdata) return;
   const { s, cen } = jdata, cw = win.clientWidth, wh = win.clientHeight;
-  const sc = Math.max(cw / 390, wh / 823), W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, top = wh - H;
-  const cta = document.querySelector('.cta'), wr = win.getBoundingClientRect();
-  const ctaTop = cta ? cta.getBoundingClientRect().top - wr.top : wh - 190;
-  const base = ctaTop - 62, topM = 66, d = Math.min(75, Math.max(36, (base - topM) / 6)), size = Math.min(52, d * .8), msz = Math.min(84, d * 1.15);
-  let h = `<img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:${top}px;width:${W}px;height:${H}px">`;
+  const d = Math.max(100, Math.min(125, (wh - 170) / 4)), sc = Math.max(cw / 390, wh / 823, 6 * d / 560);
+  const W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 54, msz = 84;
+  let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
+  let yToday = H * .7;
   s.days.forEach((dd, i) => {
-    const y = base - i * d, x = left + pathX((y - top) / sc) * sc, st = dd.state, onLeft = x < cw / 2;
+    const y = 740 * sc - i * d, x = left + pathX(y / sc) * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
     const names = R.labels(dd.plan).join(' + ');
-    let inner = '', lab = names || 'Descanso', sub = DIAS[i].toUpperCase();
+    const pend = st === 'today' || st === 'resttoday';
+    let inner = '';
     if (st === 'done') inner = ic('check', '#1F0A2B', 26, 3.5);
-    else if (st === 'bonus') { inner = ic('moon', '#1F0A2B', 24, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`; lab = (names ? names + ' · ' : 'Descanso · ') + 'bônus'; }
+    else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 24, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
     else if (st === 'absent') inner = ic('minus', '#6B6272', 22);
-    else if (st === 'rest' || st === 'resttoday' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 24, 2.6);
+    else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 24, 2.6);
     else if (st === 'future') inner = ic('dumb', '#9A92A0', 24, 2.6);
-    if (st === 'resttoday') sub += ' · HOJE';
-    const isT = dd.date === today(), pend = st === 'today' || st === 'resttoday';
+    if (isT) yToday = y;
     if (pend) {
-      const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16, fr = st === 'resttoday' ? ' data-free="1"' : '';
-      h += `<button class="medal-btn" data-act="goCheck" data-d="${dd.date}"${fr} aria-label="Registrar atividade de hoje" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}</button>`;
-      sub += st === 'resttoday' ? '' : ' · HOJE'; lab = st === 'resttoday' ? 'Descanso · bônus se treinar' : lab;
-    } else h += `<div class="node ${st}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</div>`;
-    if (isT) {
-      const rl = Math.max(2, Math.min(cw - 76, onLeft ? x - 128 : x + 60));
-      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 62}px;width:74px;height:88px;pointer-events:none">`;
+      const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16;
+      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}</button>`;
+      h += `<div class="tlab" style="left:${x}px;top:${y + msz / 2 + 12}px"><small>HOJE · ${DIAS[i].toUpperCase()}</small><b>${esc(names || 'Descanso')}</b><em>Toque na medalha</em></div>`;
+    } else {
+      h += `<button class="node ${st}" data-act="diaOpen" data-d="${dd.date}" aria-label="${DIAS_LONGO[i]}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</button>`;
+      const off = size / 2 + 8, pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
+      const txt = st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
+      h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - 12}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
     }
-    const off = (pend ? msz / 2 + 8 : size / 2) + 10, pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
-    h += `<div class="nlab ${pend ? 'today' : st === 'done' ? 'done' : ''}" style="${pos};top:${y - 20}px;text-align:${onLeft ? 'left' : 'right'}"><small>${sub}</small><b>${esc(lab)}</b>${pend ? '<em>Toque na medalha</em>' : ''}</div>`;
+    if (isT) {
+      const rl = Math.max(2, Math.min(cw - 78, onLeft ? x + msz / 2 + 4 : x - msz / 2 - 78));
+      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 56}px;width:74px;height:88px;pointer-events:none">`;
+    }
   });
-  win.innerHTML = h;
+  win.innerHTML = h + '</div>';
+  const max = H - wh; if (jScroll == null) jScroll = Math.max(0, Math.min(max, yToday - wh * .58));
+  win.scrollTop = jScroll; win.addEventListener('scroll', () => { jScroll = win.scrollTop; }, { passive: true });
 }
 addEventListener('resize', layoutJourney);
+
+// toque num dia: popup com a ação certa (treino do programa x atividade livre)
+A.diaOpen = el => {
+  const date = el.dataset.d, t = today(), plan = R.weekPlan(monday(date))[dow(date)] || [], pg = R.program();
+  const cks = R.checkinsOn(date), feitos = cks.length ? `<p class="small mut">Registrado: ${cks.map(c => esc((c.names || c.acts).join(' + ')) + ' (' + c.minutes + ' min)').join('; ')}</p>` : '';
+  const ws = plan.filter(x => x.startsWith('w:')).map(x => pg?.workouts.find(w => w.id === x.slice(2))).filter(Boolean);
+  const outras = plan.filter(x => !x.startsWith('w:'));
+  if (date === t) {
+    const wk = getWk();
+    ui.sheet = () => sheet(`<h2>Hoje · ${fmtData(date)}</h2>${feitos}
+      ${ws.map(w => `<div class="card soft"><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''} · ${w.exercises.length} exercícios</p><p class="small">${esc(w.exercises.slice(0, 3).map(e => pg.exercises[e.ex]?.name || e.ex).join(', '))}${w.exercises.length > 3 ? '...' : ''}</p><button class="btn" data-act="wkStart" data-id="${esc(w.id)}">${wk && wk.id === w.id && wk.date === date ? 'CONTINUAR TREINO' : 'INICIAR TREINO'}</button></div>`).join('')}
+      ${outras.map(o => `<button class="btn${ws.length ? '2' : ''}" data-act="goCheck" data-d="${date}" data-sel="${esc(o)}">REGISTRAR ${esc(o.toUpperCase())}</button>`).join('')}
+      ${!plan.length ? '<p class="mut">Hoje é descanso planejado. Se você se mexer, vira bônus.</p>' : ''}
+      <button class="${plan.length ? 'link' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'Registrar outra atividade' : 'REGISTRAR UMA ATIVIDADE'}</button>`);
+  } else if (date === addDays(t, -1) && !R.validCount(date)) {
+    ui.sheet = () => sheet(`<h2>Ontem · ${fmtData(date)}</h2><p class="mut">Sem registro. Esqueceu? Dá para registrar até o fim de hoje.</p><button class="btn" data-act="goCheck" data-d="${date}" data-free="1">REGISTRAR ONTEM</button><button class="link" data-act="sheetClose">Fechar</button>`);
+  } else {
+    ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? '<p class="small mut">Sem registro nesse dia.</p>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
+  }
+};
 A.goCheck = el => {
-  ck.date = el.dataset.d || today(); ck.done = null; ck.minutes = 45;
+  ck.date = el.dataset.d || today(); ck.done = null; ck.minutes = 45; ui.sheet = null;
   const p = R.weekPlan(monday(ck.date))[dow(ck.date)] || [];
-  ck.sel = el.dataset.free ? [] : [...p]; ck.free = !!el.dataset.free;
+  ck.sel = el.dataset.free ? [] : el.dataset.sel ? [el.dataset.sel] : [...p]; ck.free = !!el.dataset.free;
   nav.go('#/checkin');
 };
 
