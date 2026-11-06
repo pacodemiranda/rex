@@ -76,43 +76,43 @@ export function jornada() {
     <div class="wkline"><div class="dots">${dots}</div><span>${s.active} de ${s.meta} dias ativos</span></div>${pedido}
     <div id="jwin"></div>${tabbar('jornada')}${sheetHtml()}`, 'jr'), after: layoutJourney };
 }
-function pathX(imgY) {
-  const y = Math.max(PATH[0][0], Math.min(PATH[PATH.length - 1][0], imgY));
-  for (let k = 1; k < PATH.length; k++) if (PATH[k][0] >= y) { const [y0, x0] = PATH[k - 1], [y1, x1] = PATH[k]; return y1 === y0 ? x1 : x0 + (x1 - x0) * (y - y0) / (y1 - y0); }
-  return PATH[PATH.length - 1][1];
+// posições dos 7 dias ao longo da curva do caminho (distância igual ao longo da curva)
+const SEG = PATH.filter(p => p[0] >= 190 && p[0] <= 705).reverse(); // 0 = segunda (embaixo)
+const CUM = SEG.reduce((a, p, i) => { a.push(i ? a[i - 1] + Math.hypot(p[0] - SEG[i - 1][0], p[1] - SEG[i - 1][1]) : 0); return a; }, []);
+function pointAt(a) {
+  for (let k = 1; k < SEG.length; k++) if (CUM[k] >= a) { const t = (a - CUM[k - 1]) / ((CUM[k] - CUM[k - 1]) || 1); return [SEG[k - 1][0] + (SEG[k][0] - SEG[k - 1][0]) * t, SEG[k - 1][1] + (SEG[k][1] - SEG[k - 1][1]) * t]; }
+  return SEG[SEG.length - 1];
 }
 export function layoutJourney() {
   const win = document.getElementById('jwin'); if (!win || !jdata) return;
   const { s, cen } = jdata, cw = win.clientWidth, wh = win.clientHeight;
-  const d = Math.max(100, Math.min(125, (wh - 170) / 4)), sc = Math.max(cw / 390, wh / 823, 6 * d / 560);
-  const W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 54, msz = 84;
+  const sc = Math.max(cw / 390, wh / 823) * 1.15, W = 390 * sc, H = 823 * sc, left = (cw - W) / 2, size = 66, msz = 88, L = CUM[CUM.length - 1];
   let h = `<div class="jin" style="height:${H}px"><img class="bg" src="assets/cenario/${cen}.jpg" alt="" style="left:${left}px;top:0;width:${W}px;height:${H}px">`;
   let yToday = H * .7;
   s.days.forEach((dd, i) => {
-    const y = 740 * sc - i * d, x = left + pathX(y / sc) * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
+    const [py, px] = pointAt(i * L / 6), y = py * sc, x = left + px * sc, st = dd.state, onLeft = x < cw / 2, isT = dd.date === today();
     const names = R.labels(dd.plan).join(' + ');
     const pend = st === 'today' || st === 'resttoday';
     let inner = '';
-    if (st === 'done') inner = ic('check', '#1F0A2B', 26, 3.5);
-    else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 24, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
-    else if (st === 'absent') inner = ic('minus', '#6B6272', 22);
-    else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 24, 2.6);
-    else if (st === 'future') inner = ic('dumb', '#9A92A0', 24, 2.6);
+    if (st === 'done') inner = ic('check', '#1F0A2B', 32, 3.5);
+    else if (st === 'bonus') inner = ic('moon', '#1F0A2B', 30, 2.6) + `<div class="star">${ic('star', '#1F0A2B', 15)}</div>`;
+    else if (st === 'absent') inner = ic('minus', '#6B6272', 28);
+    else if (st === 'rest' || st === 'restf') inner = ic('moon', st === 'restf' ? '#9A92A0' : '#1F0A2B', 30, 2.6);
+    else if (st === 'future') inner = ic('dumb', '#9A92A0', 30, 2.6);
     if (isT) yToday = y;
+    const txt = pend ? (names || 'Descanso') : st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
+    if (isT) { // Rex antes da medalha, para a medalha ficar por cima
+      const rl = Math.max(0, Math.min(cw - 74, onLeft ? x - msz / 2 - 74 : x + msz / 2 + 2));
+      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 50}px;width:74px;height:88px;pointer-events:none">`;
+    }
     if (pend) {
       const n = dd.plan.length > 1 ? dd.plan.length : 0, bs = msz + 16;
-      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}</button>`;
-      h += `<div class="tlab" style="left:${x}px;top:${y + msz / 2 + 12}px"><small>HOJE · ${DIAS[i].toUpperCase()}</small><b>${esc(names || 'Descanso')}</b><em>Toque na medalha</em></div>`;
+      h += `<button class="medal-btn" data-act="diaOpen" data-d="${dd.date}" aria-label="Hoje: toque para registrar" style="left:${x - bs / 2}px;top:${y - bs / 2}px;width:${bs}px;height:${bs}px"><div class="halo"></div>${medal(msz, n)}<span class="hoje">HOJE</span></button>`;
     } else {
       h += `<button class="node ${st}" data-act="diaOpen" data-d="${dd.date}" aria-label="${DIAS_LONGO[i]}" style="left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px">${inner}</button>`;
-      const off = size / 2 + 8, pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
-      const txt = st === 'bonus' ? (names ? names + ' · bônus' : 'bônus') : (dd.plan.length ? names : '');
-      h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - 12}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
     }
-    if (isT) {
-      const rl = Math.max(2, Math.min(cw - 78, onLeft ? x + msz / 2 + 4 : x - msz / 2 - 78));
-      h += `<img class="rex" src="assets/rex/${st === 'done' || st === 'bonus' ? 'orgulhoso' : 'determinado'}.png" alt="Rex" style="position:absolute;left:${rl}px;top:${y - 56}px;width:74px;height:88px;pointer-events:none">`;
-    }
+    const off = (pend ? msz / 2 + 10 : size / 2 + 8), pos = onLeft ? `left:${x + off}px` : `right:${cw - x + off}px`;
+    h += `<div class="dlab ${isT ? 'now' : ''}" style="${pos};top:${y - (isT ? 15 : 13)}px"><b>${DIAS[i]}</b>${txt ? ' ' + esc(txt) : ''}</div>`;
   });
   win.innerHTML = h + '</div>';
   const max = H - wh; if (jScroll == null) jScroll = Math.max(0, Math.min(max, yToday - wh * .58));
@@ -132,13 +132,14 @@ A.diaOpen = el => {
       ${ws.map(w => `<div class="card soft"><h2>${esc(w.name)}</h2><p class="small mut">${esc(w.focus || '')}${w.minutes ? ' · ' + w.minutes + ' min' : ''} · ${w.exercises.length} exercícios</p><p class="small">${esc(w.exercises.slice(0, 3).map(e => pg.exercises[e.ex]?.name || e.ex).join(', '))}${w.exercises.length > 3 ? '...' : ''}</p><button class="btn" data-act="wkStart" data-id="${esc(w.id)}">${wk && wk.id === w.id && wk.date === date ? 'CONTINUAR TREINO' : 'INICIAR TREINO'}</button></div>`).join('')}
       ${outras.map(o => `<button class="btn${ws.length ? '2' : ''}" data-act="goCheck" data-d="${date}" data-sel="${esc(o)}">REGISTRAR ${esc(o.toUpperCase())}</button>`).join('')}
       ${!plan.length ? '<p class="mut">Hoje é descanso planejado. Se você se mexer, vira bônus.</p>' : ''}
-      <button class="${plan.length ? 'link' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'Registrar outra atividade' : 'REGISTRAR UMA ATIVIDADE'}</button>`);
+      <button class="${plan.length ? 'link' : 'btn'}" data-act="goCheck" data-d="${date}" data-free="1">${plan.length ? 'Fazer outra atividade' : 'REGISTRAR UMA ATIVIDADE'}</button><button class="link" data-act="mudaRotina">Mudar a rotina</button>`);
   } else if (date === addDays(t, -1) && !R.validCount(date)) {
     ui.sheet = () => sheet(`<h2>Ontem · ${fmtData(date)}</h2><p class="mut">Sem registro. Esqueceu? Dá para registrar até o fim de hoje.</p><button class="btn" data-act="goCheck" data-d="${date}" data-free="1">REGISTRAR ONTEM</button><button class="link" data-act="sheetClose">Fechar</button>`);
   } else {
-    ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? '<p class="small mut">Sem registro nesse dia.</p>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
+    ui.sheet = () => sheet(`<h2>${fmtData(date)}</h2>${feitos}${plan.length ? `<p class="mut">${date > t ? 'Planejado' : 'Planejado era'}: ${esc(R.labels(plan).join(' + '))}</p>` : '<p class="mut">Descanso planejado.</p>'}${!cks.length && date < t ? '<p class="small mut">Sem registro nesse dia.</p>' : ''}${date > t ? '<button class="btn" data-act="mudaRotina">MUDAR A ROTINA</button>' : ''}<button class="link" data-act="sheetClose">Fechar</button>`);
   }
 };
+A.mudaRotina = () => { ui.sheet = null; nav.go('#/editar'); };
 A.goCheck = el => {
   ck.date = el.dataset.d || today(); ck.done = null; ck.minutes = 45; ui.sheet = null;
   const p = R.weekPlan(monday(ck.date))[dow(ck.date)] || [];

@@ -141,3 +141,9 @@ textarea.code{min-height:170px;font-family:ui-monospace,Menlo,monospace;font-siz
 .setrow.done .setchk{background:var(--grn);border-color:var(--grn)}.setrow.done .field{background:#EAF8EE}
 .restbar{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;background:var(--ink);color:#fff;border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;box-shadow:0 8px 24px rgba(31,10,43,.3)}
 .restbar b{font-size:20px;margin-left:6px}.restbar button{background:#fff;color:var(--ink);border:0;border-radius:12px;padding:8px 14px;font-weight:900}
+
+.hoje{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--red);color:#fff;font-size:11px;font-weight:900;letter-spacing:.08em;padding:3px 10px;border-radius:10px;border:2px solid #fff}
+.dlab{font-size:13px;padding:5px 11px;border-radius:12px;max-width:160px}
+.dlab.now{font-size:15px;font-weight:900;color:var(--ink);background:#fff;border:2px solid var(--red);box-shadow:0 3px 10px rgba(31,10,43,.18)}
+.dlab.now b{color:var(--red)}
+.node .star{top:-6px;right:-8px}
